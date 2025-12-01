@@ -73,3 +73,21 @@ export interface Note {
    content: string;
    date: string;
 }
+
+export interface UserStats {
+   level: number;
+   xp: number;
+   citiesVisited: number;
+   activitiesPlanned: number;
+   totalDays: number;
+   achievements: Achievement[];
+}
+
+export interface Achievement {
+   id: string;
+   name: string;
+   description: string;
+   icon: string;
+   unlocked: boolean;
+   unlockedDate?: string;
+}

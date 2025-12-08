@@ -2,7 +2,7 @@
 
 import { City, Trip } from '@/types';
 import { useState } from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 interface TripListProps {
    trips: Trip[];
@@ -22,57 +22,128 @@ export default function TripList({
    onAddCity,
 }: TripListProps) {
    const [showAddCity, setShowAddCity] = useState(false);
+   const [isTripDropdownOpen, setIsTripDropdownOpen] = useState(false);
 
    const selectedTrip = trips.find(t => t.id === selectedTripId);
 
    return (
       <div className="bg-gray-300 rounded-lg shadow-sm p-6 h-full flex flex-col">
-         <h2 className="text-xl font-semibold mb-4 text-center">Your Saved Trips</h2>
+         <h2 className="text-lg font-semibold mb-4 text-gray-700">Your Trips</h2>
 
-         {/* Trip Selector Dropdown */}
-         <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Select Trip</label>
-            <select
-               value={selectedTripId || ''}
-               onChange={(e) => {
-                  onSelectTrip(e.target.value);
-                  // Auto-select first city of the new trip
-                  const trip = trips.find(t => t.id === e.target.value);
-                  if (trip && trip.cities.length > 0) {
-                     onSelectCity(trip.cities[0].id);
-                  }
-               }}
-               className="w-full px-3 py-2 border rounded-lg bg-white"
-            >
-               <option value="">Choose a trip...</option>
-               {trips.map(trip => (
-                  <option key={trip.id} value={trip.id}>
-                     {trip.name || `Trip ${trip.id}`}
-                  </option>
-               ))}
-            </select>
+         {/* Trip Selector */}
+         <div className="mb-6">
+            <div className="relative">
+               <button
+                  onClick={() => setIsTripDropdownOpen(!isTripDropdownOpen)}
+                  className="w-full bg-white rounded-xl p-4 shadow-sm border-2 border-transparent hover:border-blue-200 transition-all text-left"
+               >
+                  {selectedTrip ? (
+                     <div className="flex items-center justify-between">
+                        <div>
+                           <div className="font-semibold text-gray-800">
+                              {selectedTrip.name || `Trip ${selectedTrip.id}`}
+                           </div>
+                           <div className="text-xs text-gray-500 mt-1">
+                              {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'city' : 'cities'}
+                              {selectedTrip.dates.arrival && (
+                                 <span className="ml-2">
+                                    {selectedTrip.dates.arrival}
+                                 </span>
+                              )}
+                           </div>
+                        </div>
+                        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isTripDropdownOpen ? 'rotate-180' : ''}`} />
+                     </div>
+                  ) : (
+                     <div className="flex items-center justify-between text-gray-500">
+                        <span>Select a trip...</span>
+                        <ChevronDownIcon className={`w-5 h-5 transition-transform ${isTripDropdownOpen ? 'rotate-180' : ''}`} />
+                     </div>
+                  )}
+               </button>
+
+               {/* Dropdown Menu */}
+               {isTripDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-10">
+                     {trips.map(trip => (
+                        <button
+                           key={trip.id}
+                           onClick={() => {
+                              onSelectTrip(trip.id);
+                              if (trip.cities.length > 0) {
+                                 onSelectCity(trip.cities[0].id);
+                              }
+                              setIsTripDropdownOpen(false);
+                           }}
+                           className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0 ${
+                              selectedTripId === trip.id ? 'bg-blue-50' : ''
+                           }`}
+                        >
+                           <div className="font-medium text-gray-800">
+                              {trip.name || `Trip ${trip.id}`}
+                           </div>
+                           <div className="text-xs text-gray-500 mt-0.5">
+                              {trip.cities.length} {trip.cities.length === 1 ? 'city' : 'cities'}
+                           </div>
+                        </button>
+                     ))}
+
+                     {/* Add New Trip Button */}
+                     <button
+                        onClick={() => setIsTripDropdownOpen(false)}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-blue-600 font-medium flex items-center gap-2"
+                     >
+                        <PlusIcon className="w-4 h-4" />
+                        Create New Trip
+                     </button>
+                  </div>
+               )}
+            </div>
          </div>
 
          {/* Cities List for Selected Trip */}
          {selectedTrip && (
             <>
-               <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium">Cities</h3>
+               <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                     Destinations
+                  </h3>
+                  <span className="text-xs text-gray-400">
+                     {selectedTrip.cities.length} stops
+                  </span>
                </div>
 
                <ul className="space-y-2 flex-1 overflow-y-auto">
-                  {selectedTrip.cities.map((city) => (
+                  {selectedTrip.cities.map((city, index) => (
                      <li key={city.id}>
                         <button
                            onClick={() => onSelectCity(city.id)}
-                           className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
+                           className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
                               selectedCityId === city.id
-                                 ? 'bg-blue-50 border-2 border-blue-500'
-                                 : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                                 ? 'bg-blue-500 text-white shadow-md'
+                                 : 'bg-white hover:bg-gray-50 text-gray-800 shadow-sm'
                            }`}
                         >
-                           <div className="font-medium">{city.name}</div>
-                           <div className="text-sm text-gray-500">{city.country}</div>
+                           <div className="flex items-center gap-3">
+                              <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                 selectedCityId === city.id
+                                    ? 'bg-blue-400 text-white'
+                                    : 'bg-gray-100 text-gray-500'
+                              }`}>
+                                 {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                 <div className="font-medium">{city.name}</div>
+                                 <div className={`text-xs ${
+                                    selectedCityId === city.id ? 'text-blue-100' : 'text-gray-400'
+                                 }`}>
+                                    {city.country}
+                                 </div>
+                              </div>
+                              <MapPinIcon className={`w-4 h-4 ${
+                                 selectedCityId === city.id ? 'text-blue-200' : 'text-gray-300'
+                              }`} />
+                           </div>
                         </button>
                      </li>
                   ))}
@@ -80,10 +151,10 @@ export default function TripList({
 
                <button
                   onClick={() => setShowAddCity(!showAddCity)}
-                  className="rounded-lg mt-4 w-full px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                  className="rounded-xl mt-4 w-full px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm font-medium"
                >
-                  Add City
                   <PlusIcon className="h-5 w-5" />
+                  Add Destination
                </button>
             </>
          )}

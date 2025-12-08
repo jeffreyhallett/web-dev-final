@@ -106,38 +106,19 @@ export default function TripView({
          </div>
 
          <div className="flex flex-col gap-4">
-            <div className="rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center">
-               <h2 className="text-2xl font-bold">{city.name}, {city.country}</h2>
-               <p className="text-sm text-gray-500">
-                  Coordinates: {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
-               </p>
-               {trip.name && (
-                  <p className="text-xs text-gray-400 mt-1">
-                     Trip: {trip.name}
-                  </p>
-               )}
+            <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center">
+               <h2 className="text-2xl font-bold text-gray-800">{city.name}</h2>
+               <p className="text-sm text-gray-500">{city.country}</p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm overflow-y-auto flex-1">
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1">
                <CityViewMap city={city} />
             </div>
          </div>
 
          <div className="flex flex-col">
             <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
-               <h3 className="text-lg font-semibold mb-4">Trip Plan</h3>
+               <h3 className="text-lg font-semibold mb-4">City Details</h3>
                <div className="space-y-4">
-                  {/* Trip Dates */}
-                  {(trip.dates.arrival || trip.dates.departure) && (
-                     <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                           Dates:
-                        </label>
-                        <p className="text-sm">
-                           {trip.dates.arrival} - {trip.dates.departure}
-                        </p>
-                     </div>
-                  )}
-
                   <div>
                      <label className="block text-sm font-medium text-gray-500 mb-1">
                         Accommodation:

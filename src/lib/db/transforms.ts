@@ -11,8 +11,11 @@ import type {
 } from './types';
 
 // Helper to extract just the date portion from a timestamp
-function toDateOnly(timestamp: string | null | undefined): string {
+function toDateOnly(timestamp: string | Date | null | undefined): string {
    if (!timestamp) return '';
+   if (timestamp instanceof Date) {
+      return timestamp.toISOString().split('T')[0];
+   }
    return timestamp.split('T')[0];
 }
 

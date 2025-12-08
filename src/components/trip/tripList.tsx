@@ -11,6 +11,7 @@ interface TripListProps {
    onSelectTrip: (tripId: string) => void;
    onSelectCity: (cityId: string) => void;
    onAddCity: (city: City) => void;
+   onCreateTrip?: () => void;
 }
 
 export default function TripList({
@@ -20,6 +21,7 @@ export default function TripList({
    onSelectTrip,
    onSelectCity,
    onAddCity,
+   onCreateTrip,
 }: TripListProps) {
    const [showAddCity, setShowAddCity] = useState(false);
    const [isTripDropdownOpen, setIsTripDropdownOpen] = useState(false);
@@ -90,7 +92,10 @@ export default function TripList({
 
                      {/* Add New Trip Button */}
                      <button
-                        onClick={() => setIsTripDropdownOpen(false)}
+                        onClick={() => {
+                           setIsTripDropdownOpen(false);
+                           onCreateTrip?.();
+                        }}
                         className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-blue-600 font-medium flex items-center gap-2"
                      >
                         <PlusIcon className="w-4 h-4" />

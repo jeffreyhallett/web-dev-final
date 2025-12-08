@@ -2,95 +2,195 @@
 
 import TripList from '@/components/trip/tripList';
 import { Trip, City, Activity } from '@/types';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import {
+   useTrips,
+   useTrip,
+   useCreateTrip,
+   useDeleteTrip,
+   useCreateCity,
+   useUpdateAccommodation,
+   useCreateAccommodation,
+   useUpdateNote,
+   useCreateNote,
+} from '@/lib/api';
 
 export default function HomePage() {
    const [view, setView] = useState<'list' | 'map'>('list');
+   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
-   // Trip-centric state
-   const [trips, setTrips] = useState<Trip[]>([
-      {
-         id: '1',
-         userId: '1',
-         name: 'Europe Summer 2025',
-         cities: [
-            {
-               id: '1',
-               name: 'Vienna',
-               country: 'Austria',
-               latitude: 48.2082,
-               longitude: 16.3738,
-            },
-            {
-               id: '2',
-               name: 'Prague',
-               country: 'Czech Republic',
-               latitude: 50.0755,
-               longitude: 14.4378,
-            },
-         ],
-         dates: { arrival: '', departure: '' },
-         accommodation: [],
-         activities: [],
-         transportation: { flights: [], trainRides: [] },
-         notes: [],
-      },
-   ]);
+   // Fetch trips from API
+   const { data: trips, isLoading: tripsLoading, error: tripsError, refetch: refetchTrips } = useTrips();
 
-   const [selectedTripId, setSelectedTripId] = useState<string | null>('1');
-   const [selectedCityId, setSelectedCityId] = useState<string | null>('1');
+   // Fetch selected trip details
+   const { data: selectedTrip, refetch: refetchTrip } = useTrip(selectedTripId);
+
+   // Mutations
+   const { mutate: createTrip } = useCreateTrip();
+   const { mutate: deleteTrip } = useDeleteTrip();
+   const { mutate: createCity } = useCreateCity();
+   const { mutate: createAccommodation } = useCreateAccommodation();
+   const { mutate: updateAccommodation } = useUpdateAccommodation();
+   const { mutate: createNote } = useCreateNote();
+   const { mutate: updateNote } = useUpdateNote();
 
    // Derived values
-   const selectedTrip = trips.find(t => t.id === selectedTripId);
    const selectedCity = selectedTrip?.cities.find(c => c.id === selectedCityId);
 
+   // Handler to select a trip
+   const handleSelectTrip = useCallback((tripId: string) => {
+      setSelectedTripId(tripId);
+   }, []);
+
    // Handler to add a city to the current trip
-   const handleAddCity = (city: City) => {
+   const handleAddCity = useCallback(async (city: City) => {
       if (!selectedTripId) return;
 
-      setTrips(prev => prev.map(t =>
-         t.id === selectedTripId
-            ? { ...t, cities: [...t.cities, city] }
-            : t
-      ));
-   };
+      try {
+         await createCity({
+            tripId: selectedTripId,
+            data: {
+               name: city.name,
+               country: city.country,
+               latitude: city.latitude,
+               longitude: city.longitude,
+            },
+         });
+         await refetchTrip();
+      } catch (error) {
+         console.error('Failed to add city:', error);
+      }
+   }, [selectedTripId, createCity, refetchTrip]);
 
    // Handler to update activities within a trip
-   const handleUpdateActivities = (newActivities: Activity[]) => {
-      if (!selectedTripId) return;
+   const handleUpdateActivities = useCallback((newActivities: Activity[]) => {
+      // Activities are managed through individual API calls in TripView
+      // This handler is kept for component compatibility
+      refetchTrip();
+   }, [refetchTrip]);
 
-      setTrips(prev => prev.map(t =>
-         t.id === selectedTripId
-            ? { ...t, activities: newActivities }
-            : t
-      ));
-   };
+   // Handler to update trip (partial updates - for accommodation and notes)
+   const handleUpdateTrip = useCallback(async (updates: Partial<Trip>) => {
+      if (!selectedTripId || !selectedTrip) return;
 
-   // Handler to update trip (partial updates)
-   const handleUpdateTrip = (updates: Partial<Trip>) => {
-      if (!selectedTripId) return;
+      try {
+         // Handle accommodation updates
+         if (updates.accommodation) {
+            for (const acc of updates.accommodation) {
+               if (acc.id && !acc.id.startsWith('temp-')) {
+                  // Update existing accommodation
+                  await updateAccommodation({
+                     tripId: selectedTripId,
+                     accommodationId: acc.id,
+                     data: {
+                        name: acc.name,
+                        address: acc.address,
+                        checkIn: acc.checkIn,
+                        checkOut: acc.checkOut,
+                        cityId: acc.city.id,
+                        bookingUrl: acc.url,
+                     },
+                  });
+               } else if (acc.name) {
+                  // Create new accommodation
+                  await createAccommodation({
+                     tripId: selectedTripId,
+                     data: {
+                        name: acc.name,
+                        cityId: acc.city.id,
+                        address: acc.address,
+                        checkIn: acc.checkIn,
+                        checkOut: acc.checkOut,
+                        bookingUrl: acc.url,
+                     },
+                  });
+               }
+            }
+         }
 
-      setTrips(prev => prev.map(t =>
-         t.id === selectedTripId
-            ? { ...t, ...updates }
-            : t
-      ));
-   };
+         // Handle notes updates
+         if (updates.notes) {
+            for (const note of updates.notes) {
+               if (note.id && !note.id.startsWith('temp-')) {
+                  // Update existing note
+                  await updateNote({
+                     tripId: selectedTripId,
+                     noteId: note.id,
+                     data: {
+                        content: note.content,
+                        noteDate: note.date,
+                     },
+                  });
+               } else if (note.content) {
+                  // Create new note
+                  await createNote({
+                     tripId: selectedTripId,
+                     data: {
+                        content: note.content,
+                        noteDate: note.date,
+                     },
+                  });
+               }
+            }
+         }
+
+         await refetchTrip();
+      } catch (error) {
+         console.error('Failed to update trip:', error);
+      }
+   }, [selectedTripId, selectedTrip, updateAccommodation, createAccommodation, updateNote, createNote, refetchTrip]);
 
    // Handler to delete trip
-   const handleDeleteTrip = () => {
+   const handleDeleteTrip = useCallback(async () => {
       if (!selectedTripId) return;
 
       const confirmed = window.confirm('Are you sure you want to delete this trip?');
       if (!confirmed) return;
 
-      setTrips(prev => prev.filter(t => t.id !== selectedTripId));
-      setSelectedTripId(null);
-      setSelectedCityId(null);
-   };
+      try {
+         await deleteTrip(selectedTripId);
+         setSelectedTripId(null);
+         setSelectedCityId(null);
+         await refetchTrips();
+      } catch (error) {
+         console.error('Failed to delete trip:', error);
+      }
+   }, [selectedTripId, deleteTrip, refetchTrips]);
+
+   // Handler to create a new trip
+   const handleCreateTrip = useCallback(async () => {
+      try {
+         const newTrip = await createTrip({ name: 'New Trip' });
+         await refetchTrips();
+         setSelectedTripId(newTrip.id);
+      } catch (error) {
+         console.error('Failed to create trip:', error);
+      }
+   }, [createTrip, refetchTrips]);
+
+   // Loading state
+   if (tripsLoading) {
+      return (
+         <div className="flex items-center justify-center h-screen">
+            <div className="text-gray-500">Loading trips...</div>
+         </div>
+      );
+   }
+
+   // Error state
+   if (tripsError) {
+      return (
+         <div className="flex items-center justify-center h-screen">
+            <div className="text-red-500">Error loading trips: {tripsError.message}</div>
+         </div>
+      );
+   }
+
+   const tripsList = trips || [];
 
    return (
       <div className="flex flex-col h-screen">
@@ -99,12 +199,13 @@ export default function HomePage() {
             <aside className="w-64 flex flex-col">
                <div className="px-4 py-6 flex-1">
                   <TripList
-                     trips={trips}
+                     trips={tripsList}
                      selectedTripId={selectedTripId}
                      selectedCityId={selectedCityId}
-                     onSelectTrip={setSelectedTripId}
+                     onSelectTrip={handleSelectTrip}
                      onSelectCity={setSelectedCityId}
                      onAddCity={handleAddCity}
+                     onCreateTrip={handleCreateTrip}
                   />
                </div>
             </aside>
@@ -166,7 +267,9 @@ export default function HomePage() {
                      />
                   ) : (
                      <div className="flex items-center justify-center h-full text-gray-500">
-                        Select a trip and city to get started
+                        {tripsList.length === 0
+                           ? 'Create a trip to get started'
+                           : 'Select a trip and city to get started'}
                      </div>
                   )}
                </div>

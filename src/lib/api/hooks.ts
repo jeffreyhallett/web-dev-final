@@ -392,3 +392,137 @@ export function useDeleteNote(): UseMutationResult<{ success: boolean; deletedId
 
    return { mutate, isLoading, error };
 }
+
+// ============ Flights Hooks ============
+export function useCreateFlight(): UseMutationResult<Flight, { tripId: string; data: Parameters<typeof flightsApi.create>[1] }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, data }: { tripId: string; data: Parameters<typeof flightsApi.create>[1] }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await flightsApi.create(tripId, data);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to create flight');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}
+
+export function useUpdateFlight(): UseMutationResult<Flight, { tripId: string; flightId: string; data: Parameters<typeof flightsApi.update>[2] }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, flightId, data }: { tripId: string; flightId: string; data: Parameters<typeof flightsApi.update>[2] }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await flightsApi.update(tripId, flightId, data);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to update flight');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}
+
+export function useDeleteFlight(): UseMutationResult<{ success: boolean; deletedId: string }, { tripId: string; flightId: string }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, flightId }: { tripId: string; flightId: string }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await flightsApi.delete(tripId, flightId);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to delete flight');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}
+
+// ============ Trains Hooks ============
+export function useCreateTrain(): UseMutationResult<Train, { tripId: string; data: Parameters<typeof trainsApi.create>[1] }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, data }: { tripId: string; data: Parameters<typeof trainsApi.create>[1] }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await trainsApi.create(tripId, data);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to create train');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}
+
+export function useUpdateTrain(): UseMutationResult<Train, { tripId: string; trainId: string; data: Parameters<typeof trainsApi.update>[2] }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, trainId, data }: { tripId: string; trainId: string; data: Parameters<typeof trainsApi.update>[2] }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await trainsApi.update(tripId, trainId, data);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to update train');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}
+
+export function useDeleteTrain(): UseMutationResult<{ success: boolean; deletedId: string }, { tripId: string; trainId: string }> {
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const mutate = async ({ tripId, trainId }: { tripId: string; trainId: string }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+         const result = await trainsApi.delete(tripId, trainId);
+         return result;
+      } catch (err) {
+         const error = err instanceof Error ? err : new Error('Failed to delete train');
+         setError(error);
+         throw error;
+      } finally {
+         setIsLoading(false);
+      }
+   };
+
+   return { mutate, isLoading, error };
+}

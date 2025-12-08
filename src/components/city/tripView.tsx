@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
+import TransportationSection from '@/components/transportation/transportationSection';
 
 interface TripViewProps {
    trip: Trip;
@@ -12,6 +13,25 @@ interface TripViewProps {
    activities: Activity[];
    onUpdateActivities: (activities: Activity[]) => void;
    onUpdateTrip: (updates: Partial<Trip>) => void;
+   onAddActivity?: () => void;
+   onAddFlight?: (data: {
+      departureAirport: string;
+      arrivalAirport: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+   }) => Promise<void>;
+   onAddTrain?: (data: {
+      departureStation: string;
+      arrivalStation: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+   }) => Promise<void>;
+   onDeleteFlight?: (flightId: string) => Promise<void>;
+   onDeleteTrain?: (trainId: string) => Promise<void>;
 }
 
 export default function TripView({
@@ -20,6 +40,11 @@ export default function TripView({
    activities,
    onUpdateActivities,
    onUpdateTrip,
+   onAddActivity,
+   onAddFlight,
+   onAddTrain,
+   onDeleteFlight,
+   onDeleteTrain,
 }: TripViewProps) {
    // Local state for form inputs
    const [accommodationName, setAccommodationName] = useState('');
@@ -81,10 +106,9 @@ export default function TripView({
                      <div className="flex justify-between items-center mb-4">
                         <h3 className="text-lg font-semibold">Planned Activities</h3>
                         <button
-                           onClick={() => {
-                              // Add activity logic
-                           }}
+                           onClick={onAddActivity}
                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                           title="Add activity"
                         >
                            <PlusIcon className="w-5 h-5" />
                         </button>
@@ -133,21 +157,16 @@ export default function TripView({
                      />
                   </div>
 
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Transportation:
-                     </label>
-                     {trip.transportation.flights && trip.transportation.flights.length > 0 && (
-                        <div className="text-sm text-gray-600">
-                           {trip.transportation.flights.length} flight(s)
-                        </div>
-                     )}
-                     {trip.transportation.trainRides && trip.transportation.trainRides.length > 0 && (
-                        <div className="text-sm text-gray-600">
-                           {trip.transportation.trainRides.length} train(s)
-                        </div>
-                     )}
-                  </div>
+                  {onAddFlight && onAddTrain && onDeleteFlight && onDeleteTrain && (
+                     <TransportationSection
+                        flights={trip.transportation.flights || []}
+                        trains={trip.transportation.trainRides || []}
+                        onAddFlight={onAddFlight}
+                        onAddTrain={onAddTrain}
+                        onDeleteFlight={onDeleteFlight}
+                        onDeleteTrain={onDeleteTrain}
+                     />
+                  )}
 
                   <div>
                      <label className="block text-sm font-medium text-gray-700 mb-1">

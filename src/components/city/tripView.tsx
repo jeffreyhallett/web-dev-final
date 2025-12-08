@@ -43,7 +43,7 @@ export default function TripView({
       const existingIndex = existingAccommodations.findIndex(a => a.city.id === city.id);
 
       const newAccommodation: Accommodation = {
-         id: cityAccommodation?.id || Date.now().toString(),
+         id: cityAccommodation?.id || `temp-${Date.now()}`,
          name: accommodationName,
          address: cityAccommodation?.address || '',
          checkIn: cityAccommodation?.checkIn || '',
@@ -64,9 +64,9 @@ export default function TripView({
    // Handler for updating notes
    const handleNotesBlur = () => {
       const newNote: Note = {
-         id: trip.notes[0]?.id || Date.now().toString(),
+         id: trip.notes[0]?.id || `temp-${Date.now()}`,
          content: noteContent,
-         date: new Date().toISOString(),
+         date: new Date().toISOString().split('T')[0],
       };
 
       onUpdateTrip({ notes: [newNote] });

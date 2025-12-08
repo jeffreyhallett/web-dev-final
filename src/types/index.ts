@@ -1,5 +1,7 @@
 export interface Trip {
    id: string;
+   userId: string;
+   name?: string;
    cities: City[];
    dates: {
       arrival: string;

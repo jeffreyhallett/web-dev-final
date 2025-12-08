@@ -1,45 +1,80 @@
 'use client';
 
-import { City, Activity, Trip } from '@/types';
+import { City, Activity, Trip, Accommodation, Note } from '@/types';
 import { useState, useEffect } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
 
-
-interface CityViewProps {
+interface TripViewProps {
+   trip: Trip;
    city: City;
-   trip?: Trip;
    activities: Activity[];
    onUpdateActivities: (activities: Activity[]) => void;
-   onUpdateTrip: (trip: Trip) => void;
+   onUpdateTrip: (updates: Partial<Trip>) => void;
 }
 
 export default function TripView({
-   city,
    trip,
+   city,
    activities,
    onUpdateActivities,
    onUpdateTrip,
-}: CityViewProps) {
-   const [unsavedTrip, setUnsavedTrip] = useState<Trip>(
-      trip || {
-         id: '',
-         cities: [city],
-         activities: [],
-         dates: { arrival: '', departure: '' },
-         accommodation: [],
-         transportation: { flights: [], trainRides: [] },
-         notes: [],
-      }
-   );
+}: TripViewProps) {
+   // Local state for form inputs
+   const [accommodationName, setAccommodationName] = useState('');
+   const [noteContent, setNoteContent] = useState('');
 
-   const recommendedActivities = activities.filter((a) => a.inTravelPlan === false);
+   // Get accommodations for this city
+   const cityAccommodation = trip.accommodation.find(a => a.city.id === city.id);
+
+   // Initialize local state from trip data
+   useEffect(() => {
+      setAccommodationName(cityAccommodation?.name || '');
+      // Get notes (notes are trip-level, not city-specific)
+      setNoteContent(trip.notes[0]?.content || '');
+   }, [city.id, cityAccommodation, trip.notes]);
+
    const plannedActivities = activities.filter((a) => a.inTravelPlan === true);
+
+   // Handler for updating accommodation
+   const handleAccommodationBlur = () => {
+      const existingAccommodations = [...trip.accommodation];
+      const existingIndex = existingAccommodations.findIndex(a => a.city.id === city.id);
+
+      const newAccommodation: Accommodation = {
+         id: cityAccommodation?.id || Date.now().toString(),
+         name: accommodationName,
+         address: cityAccommodation?.address || '',
+         checkIn: cityAccommodation?.checkIn || '',
+         checkOut: cityAccommodation?.checkOut || '',
+         city: city,
+         url: cityAccommodation?.url,
+      };
+
+      if (existingIndex !== -1) {
+         existingAccommodations[existingIndex] = newAccommodation;
+      } else if (accommodationName) {
+         existingAccommodations.push(newAccommodation);
+      }
+
+      onUpdateTrip({ accommodation: existingAccommodations });
+   };
+
+   // Handler for updating notes
+   const handleNotesBlur = () => {
+      const newNote: Note = {
+         id: trip.notes[0]?.id || Date.now().toString(),
+         content: noteContent,
+         date: new Date().toISOString(),
+      };
+
+      onUpdateTrip({ notes: [newNote] });
+   };
 
    return (
       <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full">
-         <div className='flex flex-col'>
+         <div className="flex flex-col">
             <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
                <div className="space-y-6">
                   <div>
@@ -70,43 +105,50 @@ export default function TripView({
             </div>
          </div>
 
-         <div className='flex flex-col gap-4'>
-            <div className='rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center'>
-               <h2 className='text-2xl font-bold'>{city.name}, {city.country}</h2>
+         <div className="flex flex-col gap-4">
+            <div className="rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center">
+               <h2 className="text-2xl font-bold">{city.name}, {city.country}</h2>
                <p className="text-sm text-gray-500">
-                  Coordinates: {city.latitude.toFixed(4)}°, {city.longitude.toFixed(4)}°
+                  Coordinates: {city.latitude.toFixed(4)}, {city.longitude.toFixed(4)}
                </p>
+               {trip.name && (
+                  <p className="text-xs text-gray-400 mt-1">
+                     Trip: {trip.name}
+                  </p>
+               )}
             </div>
             <div className="bg-white rounded-xl shadow-sm overflow-y-auto flex-1">
                <CityViewMap city={city} />
             </div>
          </div>
 
-         <div className='flex flex-col'>
+         <div className="flex flex-col">
             <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
                <h3 className="text-lg font-semibold mb-4">Trip Plan</h3>
                <div className="space-y-4">
+                  {/* Trip Dates */}
+                  {(trip.dates.arrival || trip.dates.departure) && (
+                     <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                           Dates:
+                        </label>
+                        <p className="text-sm">
+                           {trip.dates.arrival} - {trip.dates.departure}
+                        </p>
+                     </div>
+                  )}
+
                   <div>
                      <label className="block text-sm font-medium text-gray-500 mb-1">
                         Accommodation:
                      </label>
                      <input
                         type="text"
-                        value={unsavedTrip.accommodation[0]?.name || ''}
-                        onChange={(e) => {
-                           setUnsavedTrip({
-                              ...unsavedTrip,
-                              accommodation: [
-                                 {
-                                    ...unsavedTrip.accommodation[0],
-                                    name: e.target.value,
-                                 },
-                              ],
-                           });
-                        }}
+                        value={accommodationName}
+                        onChange={(e) => setAccommodationName(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter accommodation name"
-                        onBlur={() => onUpdateTrip(unsavedTrip)}
+                        onBlur={handleAccommodationBlur}
                      />
                   </div>
 
@@ -114,6 +156,16 @@ export default function TripView({
                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Transportation:
                      </label>
+                     {trip.transportation.flights && trip.transportation.flights.length > 0 && (
+                        <div className="text-sm text-gray-600">
+                           {trip.transportation.flights.length} flight(s)
+                        </div>
+                     )}
+                     {trip.transportation.trainRides && trip.transportation.trainRides.length > 0 && (
+                        <div className="text-sm text-gray-600">
+                           {trip.transportation.trainRides.length} train(s)
+                        </div>
+                     )}
                   </div>
 
                   <div>
@@ -121,16 +173,9 @@ export default function TripView({
                         Notes:
                      </label>
                      <textarea
-                        value={unsavedTrip.notes[0]?.content || ''}
-                        onChange={(e) =>
-                           setUnsavedTrip({
-                              ...unsavedTrip,
-                              notes: [
-                                 { ...unsavedTrip.notes[0], content: e.target.value },
-                              ],
-                           })
-                        }
-                        onBlur={() => onUpdateTrip(unsavedTrip)}
+                        value={noteContent}
+                        onChange={(e) => setNoteContent(e.target.value)}
+                        onBlur={handleNotesBlur}
                         placeholder="Important information..."
                         rows={4}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"

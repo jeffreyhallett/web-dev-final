@@ -97,7 +97,7 @@ export default function HomePage() {
          <Header view={view} onViewChange={setView} />
          <div className="flex flex-1 overflow-hidden">
             <aside className="w-64 flex flex-col">
-               <div className="px-4 py-8 flex-1">
+               <div className="px-4 py-6 flex-1">
                   <TripList
                      trips={trips}
                      selectedTripId={selectedTripId}

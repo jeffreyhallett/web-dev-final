@@ -10,6 +10,12 @@ import type {
    DbNote,
 } from './types';
 
+// Helper to extract just the date portion from a timestamp
+function toDateOnly(timestamp: string | null | undefined): string {
+   if (!timestamp) return '';
+   return timestamp.split('T')[0];
+}
+
 // City transforms
 export function dbCityToCity(dbCity: DbTripCity): City {
    return {
@@ -48,8 +54,8 @@ export function dbAccommodationToAccommodation(
       id: dbAccommodation.id,
       name: dbAccommodation.name,
       address: dbAccommodation.address || '',
-      checkIn: dbAccommodation.check_in || '',
-      checkOut: dbAccommodation.check_out || '',
+      checkIn: toDateOnly(dbAccommodation.check_in),
+      checkOut: toDateOnly(dbAccommodation.check_out),
       city: city || { id: '', name: '', country: '', latitude: 0, longitude: 0 },
       url: dbAccommodation.booking_url || undefined,
    };
@@ -61,8 +67,8 @@ export function dbFlightToFlight(dbFlight: DbFlight): Flight {
       id: dbFlight.id,
       number: dbFlight.flight_number || undefined,
       times: {
-         departure: dbFlight.departure_time || undefined,
-         arrival: dbFlight.arrival_time || undefined,
+         departure: toDateOnly(dbFlight.departure_time) || undefined,
+         arrival: toDateOnly(dbFlight.arrival_time) || undefined,
       },
       airline: dbFlight.airline || undefined,
       departureAirport: dbFlight.departure_airport,
@@ -76,8 +82,8 @@ export function dbTrainToTrain(dbTrain: DbTrain): Train {
       id: dbTrain.id,
       number: dbTrain.train_number || undefined,
       times: {
-         departure: dbTrain.departure_time || undefined,
-         arrival: dbTrain.arrival_time || undefined,
+         departure: toDateOnly(dbTrain.departure_time) || undefined,
+         arrival: toDateOnly(dbTrain.arrival_time) || undefined,
       },
       operator: dbTrain.operator || undefined,
       departureStation: dbTrain.departure_station,
@@ -90,7 +96,7 @@ export function dbNoteToNote(dbNote: DbNote): Note {
    return {
       id: dbNote.id,
       content: dbNote.content,
-      date: dbNote.note_date || '',
+      date: toDateOnly(dbNote.note_date),
    };
 }
 
@@ -114,8 +120,8 @@ export function assembleTrip(
       name: dbTrip.name || undefined,
       cities,
       dates: {
-         arrival: dbTrip.arrival_date || '',
-         departure: dbTrip.departure_date || '',
+         arrival: toDateOnly(dbTrip.arrival_date),
+         departure: toDateOnly(dbTrip.departure_date),
       },
       activities: dbActivities.map((a) =>
          dbActivityToActivity(a, a.city_id ? cityMap.get(a.city_id) || null : null)

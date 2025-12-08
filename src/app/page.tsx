@@ -5,6 +5,7 @@ import { Trip, City, Activity } from '@/types';
 import { useState } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
+import { TrashIcon } from '@heroicons/react/24/outline';
 
 export default function HomePage() {
    const [view, setView] = useState<'list' | 'map'>('list');
@@ -79,6 +80,18 @@ export default function HomePage() {
       ));
    };
 
+   // Handler to delete trip
+   const handleDeleteTrip = () => {
+      if (!selectedTripId) return;
+
+      const confirmed = window.confirm('Are you sure you want to delete this trip?');
+      if (!confirmed) return;
+
+      setTrips(prev => prev.filter(t => t.id !== selectedTripId));
+      setSelectedTripId(null);
+      setSelectedCityId(null);
+   };
+
    return (
       <div className="flex flex-col h-screen">
          <Header view={view} onViewChange={setView} />
@@ -95,46 +108,54 @@ export default function HomePage() {
                   />
                </div>
             </aside>
-            <main className="flex-1 flex flex-col">
+            <main className="flex-1 flex flex-col px-4 py-6 gap-4 overflow-hidden">
                {/* Trip Header Strip */}
                {selectedTrip && (
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 shadow-md">
+                  <div className="bg-white rounded-xl shadow-sm px-6 py-4">
                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                           <div>
-                              <h1 className="text-xl font-bold">
-                                 {selectedTrip.name || 'Untitled Trip'}
-                              </h1>
-                              <p className="text-blue-100 text-sm mt-0.5">
-                                 {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'destination' : 'destinations'}
-                                 {selectedTrip.dates.arrival && selectedTrip.dates.departure && (
-                                    <span className="ml-3">
-                                       {selectedTrip.dates.arrival} — {selectedTrip.dates.departure}
-                                    </span>
-                                 )}
-                              </p>
-                           </div>
+                        <div>
+                           <h1 className="text-lg font-semibold text-gray-800">
+                              {selectedTrip.name || 'Untitled Trip'}
+                           </h1>
+                           <p className="text-gray-500 text-sm mt-0.5">
+                              {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'destination' : 'destinations'}
+                              {selectedTrip.dates.arrival && selectedTrip.dates.departure && (
+                                 <span className="ml-2 text-gray-400">
+                                    {selectedTrip.dates.arrival} — {selectedTrip.dates.departure}
+                                 </span>
+                              )}
+                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                           {selectedTrip.cities.map((city, index) => (
-                              <button
-                                 key={city.id}
-                                 onClick={() => setSelectedCityId(city.id)}
-                                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                                    selectedCityId === city.id
-                                       ? 'bg-white text-blue-600'
-                                       : 'bg-blue-500/30 text-white hover:bg-blue-500/50'
-                                 }`}
-                              >
-                                 {city.name}
-                              </button>
-                           ))}
+                        <div className="flex items-center gap-3">
+                           <div className="flex items-center gap-1">
+                              {selectedTrip.cities.map((city) => (
+                                 <button
+                                    key={city.id}
+                                    onClick={() => setSelectedCityId(city.id)}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                                       selectedCityId === city.id
+                                          ? 'bg-gray-800 text-white'
+                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                 >
+                                    {city.name}
+                                 </button>
+                              ))}
+                           </div>
+                           <div className="w-px h-6 bg-gray-200" />
+                           <button
+                              onClick={handleDeleteTrip}
+                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete trip"
+                           >
+                              <TrashIcon className="w-5 h-5" />
+                           </button>
                         </div>
                      </div>
                   </div>
                )}
 
-               <div className="px-4 py-6 flex-1 w-full overflow-hidden">
+               <div className="flex-1 w-full overflow-hidden">
                   {selectedTrip && selectedCity ? (
                      <TripView
                         trip={selectedTrip}

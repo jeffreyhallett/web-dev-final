@@ -1,1 +1,296 @@
 @import 'tailwindcss';
+
+/* ============================================
+   VINTAGE TRAVEL JOURNAL DESIGN SYSTEM
+   ============================================ */
+
+:root {
+   /* Warm, nostalgic color palette */
+   --paper-cream: #f5f0e6;
+   --paper-aged: #e8e0d0;
+   --ink-dark: #2c2416;
+   --ink-faded: #5c5445;
+   --stamp-red: #c41e3a;
+   --stamp-blue: #1e4d8c;
+   --stamp-green: #2d5a3d;
+   --passport-navy: #1a2744;
+   --gold-accent: #c9a227;
+   --ticket-orange: #e07b39;
+   --postcard-teal: #4a9b8c;
+
+   /* Shadows and textures */
+   --shadow-paper: 0 2px 10px rgba(44, 36, 22, 0.15);
+   --shadow-lifted: 0 8px 30px rgba(44, 36, 22, 0.2);
+   --shadow-stamp: 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+/* Paper texture background */
+body {
+   background: var(--paper-cream);
+   background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+   background-blend-mode: soft-light;
+   font-family: 'Georgia', serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+   width: 8px;
+   height: 8px;
+}
+
+::-webkit-scrollbar-track {
+   background: var(--paper-aged);
+   border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+   background: var(--ink-faded);
+   border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+   background: var(--ink-dark);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes stamp-press {
+   0% { transform: scale(2) rotate(-15deg); opacity: 0; }
+   50% { transform: scale(0.95) rotate(-12deg); opacity: 1; }
+   100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+}
+
+@keyframes float-gentle {
+   0%, 100% { transform: translateY(0) rotate(-1deg); }
+   50% { transform: translateY(-4px) rotate(1deg); }
+}
+
+@keyframes typewriter {
+   from { width: 0; }
+   to { width: 100%; }
+}
+
+@keyframes fade-in-up {
+   from { opacity: 0; transform: translateY(10px); }
+   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes paper-flutter {
+   0%, 100% { transform: rotate(-2deg) translateY(0); }
+   25% { transform: rotate(0deg) translateY(-2px); }
+   50% { transform: rotate(2deg) translateY(0); }
+   75% { transform: rotate(0deg) translateY(2px); }
+}
+
+@keyframes shine {
+   0% { background-position: -200% center; }
+   100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+   0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0.4); }
+   50% { box-shadow: 0 0 20px 5px rgba(201, 162, 39, 0.2); }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.paper-texture {
+   background: var(--paper-cream);
+   background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.vintage-border {
+   border: 2px solid var(--ink-faded);
+   border-radius: 2px;
+   box-shadow:
+      inset 0 0 0 1px var(--paper-cream),
+      inset 0 0 0 3px var(--ink-faded);
+}
+
+.stamp-effect {
+   font-family: 'Courier New', monospace;
+   font-weight: bold;
+   text-transform: uppercase;
+   letter-spacing: 2px;
+   padding: 8px 16px;
+   border: 3px solid currentColor;
+   border-radius: 4px;
+   transform: rotate(-12deg);
+   opacity: 0.85;
+}
+
+.luggage-tag {
+   background: linear-gradient(135deg, var(--paper-cream) 0%, var(--paper-aged) 100%);
+   border: 2px solid var(--ink-faded);
+   border-radius: 8px 8px 8px 20px;
+   position: relative;
+}
+
+.luggage-tag::before {
+   content: '';
+   position: absolute;
+   left: 8px;
+   top: 50%;
+   transform: translateY(-50%);
+   width: 12px;
+   height: 12px;
+   border: 2px solid var(--ink-faded);
+   border-radius: 50%;
+   background: var(--paper-cream);
+}
+
+.boarding-pass {
+   background: linear-gradient(to right, #fff 0%, #fff 70%, var(--paper-aged) 70%, var(--paper-aged) 100%);
+   border: 1px dashed var(--ink-faded);
+   position: relative;
+}
+
+.boarding-pass::before,
+.boarding-pass::after {
+   content: '';
+   position: absolute;
+   width: 20px;
+   height: 20px;
+   background: var(--paper-cream);
+   border-radius: 50%;
+   top: 50%;
+   transform: translateY(-50%);
+}
+
+.boarding-pass::before { left: -10px; }
+.boarding-pass::after { right: -10px; }
+
+.postcard {
+   background: white;
+   border: 1px solid #ddd;
+   box-shadow: var(--shadow-paper);
+   position: relative;
+}
+
+.postcard::after {
+   content: '';
+   position: absolute;
+   top: 0;
+   right: 0;
+   width: 60px;
+   height: 40px;
+   background:
+      repeating-linear-gradient(
+         45deg,
+         var(--stamp-red) 0px,
+         var(--stamp-red) 2px,
+         white 2px,
+         white 4px
+      );
+   border-left: 1px dashed #ccc;
+   border-bottom: 1px dashed #ccc;
+   opacity: 0.6;
+}
+
+.ticket-stub {
+   background: var(--ticket-orange);
+   color: white;
+   position: relative;
+   overflow: hidden;
+}
+
+.ticket-stub::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   background: repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 10px,
+      rgba(255,255,255,0.05) 10px,
+      rgba(255,255,255,0.05) 20px
+   );
+}
+
+/* Handwriting style for special elements */
+.handwritten {
+   font-family: 'Brush Script MT', 'Segoe Script', cursive;
+   font-size: 1.2em;
+}
+
+/* Vintage button styles */
+.btn-vintage {
+   background: var(--ink-dark);
+   color: var(--paper-cream);
+   border: none;
+   padding: 10px 20px;
+   font-family: 'Georgia', serif;
+   font-weight: bold;
+   letter-spacing: 1px;
+   text-transform: uppercase;
+   font-size: 12px;
+   cursor: pointer;
+   transition: all 0.2s ease;
+   box-shadow: 3px 3px 0 var(--ink-faded);
+}
+
+.btn-vintage:hover {
+   transform: translate(-2px, -2px);
+   box-shadow: 5px 5px 0 var(--ink-faded);
+}
+
+.btn-vintage:active {
+   transform: translate(1px, 1px);
+   box-shadow: 2px 2px 0 var(--ink-faded);
+}
+
+/* Gold accent button */
+.btn-gold {
+   background: linear-gradient(135deg, var(--gold-accent) 0%, #a88520 100%);
+   color: var(--ink-dark);
+   border: 2px solid var(--ink-dark);
+}
+
+/* Input styles */
+.input-vintage {
+   background: rgba(255, 255, 255, 0.8);
+   border: 1px solid var(--ink-faded);
+   border-bottom-width: 2px;
+   padding: 10px 12px;
+   font-family: 'Georgia', serif;
+   color: var(--ink-dark);
+   transition: all 0.2s ease;
+}
+
+.input-vintage:focus {
+   outline: none;
+   border-color: var(--gold-accent);
+   background: white;
+   box-shadow: 0 2px 0 var(--gold-accent);
+}
+
+.input-vintage::placeholder {
+   color: var(--ink-faded);
+   font-style: italic;
+}
+
+/* Decorative corners */
+.corner-decoration {
+   position: relative;
+}
+
+.corner-decoration::before,
+.corner-decoration::after {
+   content: '❦';
+   position: absolute;
+   font-size: 20px;
+   color: var(--ink-faded);
+   opacity: 0.3;
+}
+
+.corner-decoration::before { top: 8px; left: 8px; }
+.corner-decoration::after { bottom: 8px; right: 8px; transform: rotate(180deg); }

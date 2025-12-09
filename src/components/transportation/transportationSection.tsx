@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Flight, Train } from '@/types';
-import { PlusIcon, TrashIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 interface TransportationSectionProps {
    flights: Flight[];
@@ -138,260 +137,414 @@ export default function TransportationSection({
 
    return (
       <div className="space-y-3">
-         <div className="flex items-center justify-between">
-            <label className="block text-sm font-medium text-gray-700">
-               Transportation
-            </label>
-            <button
-               onClick={() => setShowAddForm(!showAddForm)}
-               className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-               title={showAddForm ? 'Cancel' : 'Add transportation'}
-            >
-               <PlusIcon className={`w-4 h-4 transition-transform ${showAddForm ? 'rotate-45' : ''}`} />
-            </button>
-         </div>
-
-         {/* Tabs */}
-         <div className="flex border-b border-gray-200">
+         {/* Tab buttons */}
+         <div className="flex rounded-lg overflow-hidden" style={{ border: '2px solid #5c5445' }}>
             <button
                onClick={() => setActiveTab('flights')}
-               className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'flights'
-                     ? 'border-blue-500 text-blue-600'
-                     : 'border-transparent text-gray-500 hover:text-gray-700'
-               }`}
+               className="flex-1 py-2 px-3 text-sm font-bold flex items-center justify-center gap-2 transition-all"
+               style={{
+                  background: activeTab === 'flights'
+                     ? 'linear-gradient(135deg, #1e4d8c 0%, #2d5a8c 100%)'
+                     : '#f5f0e6',
+                  color: activeTab === 'flights' ? '#e8d48b' : '#5c5445',
+               }}
             >
-               Flights ({flights.length})
+               ✈️ Flights ({flights.length})
             </button>
             <button
                onClick={() => setActiveTab('trains')}
-               className={`px-3 py-1.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'trains'
-                     ? 'border-blue-500 text-blue-600'
-                     : 'border-transparent text-gray-500 hover:text-gray-700'
-               }`}
+               className="flex-1 py-2 px-3 text-sm font-bold flex items-center justify-center gap-2 transition-all"
+               style={{
+                  background: activeTab === 'trains'
+                     ? 'linear-gradient(135deg, #2d5a3d 0%, #4a7c5a 100%)'
+                     : '#f5f0e6',
+                  color: activeTab === 'trains' ? '#e8d48b' : '#5c5445',
+                  borderLeft: '2px solid #5c5445',
+               }}
             >
-               Trains ({trains.length})
+               🚂 Trains ({trains.length})
             </button>
          </div>
 
+         {/* Add button */}
+         {!showAddForm && (
+            <button
+               onClick={() => setShowAddForm(true)}
+               className="w-full py-2 text-sm font-bold rounded-lg transition-all hover:scale-[1.02]"
+               style={{
+                  background: '#f5f0e6',
+                  border: '2px dashed #5c5445',
+                  color: '#5c5445',
+               }}
+            >
+               + Add {activeTab === 'flights' ? 'Flight' : 'Train'}
+            </button>
+         )}
+
          {/* Add Form */}
          {showAddForm && (
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div
+               className="rounded-lg overflow-hidden"
+               style={{
+                  background: '#f5f0e6',
+                  border: '2px solid #5c5445',
+               }}
+            >
+               <div
+                  className="px-3 py-2 flex items-center justify-between"
+                  style={{
+                     background: activeTab === 'flights' ? '#1e4d8c' : '#2d5a3d',
+                     borderBottom: '2px solid #c9a227',
+                  }}
+               >
+                  <span className="text-sm font-bold" style={{ color: '#e8d48b' }}>
+                     {activeTab === 'flights' ? '✈️ New Flight' : '🚂 New Train'}
+                  </span>
+                  <button
+                     onClick={() => setShowAddForm(false)}
+                     className="text-xs px-2 py-1"
+                     style={{ color: '#e8d48b' }}
+                  >
+                     Cancel
+                  </button>
+               </div>
+
                {activeTab === 'flights' ? (
-                  <form onSubmit={handleAddFlight} className="space-y-2">
-                     <div className="grid grid-cols-2 gap-2">
-                        <input
-                           type="text"
-                           value={flightDeparture}
-                           onChange={(e) => setFlightDeparture(e.target.value)}
-                           placeholder="From (e.g., JFK)"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                           required
-                        />
-                        <input
-                           type="text"
-                           value={flightArrival}
-                           onChange={(e) => setFlightArrival(e.target.value)}
-                           placeholder="To (e.g., CDG)"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                           required
-                        />
+                  <form onSubmit={handleAddFlight} className="p-3 space-y-3">
+                     <div className="grid grid-cols-2 gap-3">
+                        <div>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>
+                              FROM *
+                           </label>
+                           <input
+                              type="text"
+                              value={flightDeparture}
+                              onChange={(e) => setFlightDeparture(e.target.value)}
+                              placeholder="JFK"
+                              className="w-full px-3 py-2 rounded text-sm text-center font-bold"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
+                              required
+                           />
+                        </div>
+                        <div>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>
+                              TO *
+                           </label>
+                           <input
+                              type="text"
+                              value={flightArrival}
+                              onChange={(e) => setFlightArrival(e.target.value)}
+                              placeholder="CDG"
+                              className="w-full px-3 py-2 rounded text-sm text-center font-bold"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
+                              required
+                           />
+                        </div>
                      </div>
-                     <div className="grid grid-cols-2 gap-2">
+                     <div className="grid grid-cols-2 gap-3">
                         <input
                            type="text"
                            value={airline}
                            onChange={(e) => setAirline(e.target.value)}
                            placeholder="Airline"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                           className="w-full px-3 py-2 rounded text-sm"
+                           style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                         />
                         <input
                            type="text"
                            value={flightNumber}
                            onChange={(e) => setFlightNumber(e.target.value)}
                            placeholder="Flight #"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                           className="w-full px-3 py-2 rounded text-sm"
+                           style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                         />
                      </div>
-                     <div className="grid grid-cols-2 gap-2">
+                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                           <label className="block text-xs text-gray-500 mb-0.5">Departure</label>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>DEPARTURE</label>
                            <input
                               type="datetime-local"
                               value={flightDepartureTime}
                               onChange={(e) => setFlightDepartureTime(e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                            />
                         </div>
                         <div>
-                           <label className="block text-xs text-gray-500 mb-0.5">Arrival</label>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>ARRIVAL</label>
                            <input
                               type="datetime-local"
                               value={flightArrivalTime}
                               onChange={(e) => setFlightArrivalTime(e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                            />
                         </div>
                      </div>
                      <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                        className="w-full py-2 rounded font-bold text-sm transition-all hover:scale-[1.02] disabled:opacity-50"
+                        style={{
+                           background: 'linear-gradient(135deg, #c9a227, #a88520)',
+                           color: '#2c2416',
+                           border: '2px solid #2c2416',
+                        }}
                      >
-                        {isSubmitting ? 'Adding...' : 'Add Flight'}
+                        {isSubmitting ? 'Adding...' : '✓ Add Flight'}
                      </button>
                   </form>
                ) : (
-                  <form onSubmit={handleAddTrain} className="space-y-2">
-                     <div className="grid grid-cols-2 gap-2">
-                        <input
-                           type="text"
-                           value={trainDeparture}
-                           onChange={(e) => setTrainDeparture(e.target.value)}
-                           placeholder="From station"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                           required
-                        />
-                        <input
-                           type="text"
-                           value={trainArrival}
-                           onChange={(e) => setTrainArrival(e.target.value)}
-                           placeholder="To station"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                           required
-                        />
+                  <form onSubmit={handleAddTrain} className="p-3 space-y-3">
+                     <div className="grid grid-cols-2 gap-3">
+                        <div>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>FROM *</label>
+                           <input
+                              type="text"
+                              value={trainDeparture}
+                              onChange={(e) => setTrainDeparture(e.target.value)}
+                              placeholder="Station"
+                              className="w-full px-3 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
+                              required
+                           />
+                        </div>
+                        <div>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>TO *</label>
+                           <input
+                              type="text"
+                              value={trainArrival}
+                              onChange={(e) => setTrainArrival(e.target.value)}
+                              placeholder="Station"
+                              className="w-full px-3 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
+                              required
+                           />
+                        </div>
                      </div>
-                     <div className="grid grid-cols-2 gap-2">
+                     <div className="grid grid-cols-2 gap-3">
                         <input
                            type="text"
                            value={operator}
                            onChange={(e) => setOperator(e.target.value)}
                            placeholder="Operator"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                           className="w-full px-3 py-2 rounded text-sm"
+                           style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                         />
                         <input
                            type="text"
                            value={trainNumber}
                            onChange={(e) => setTrainNumber(e.target.value)}
                            placeholder="Train #"
-                           className="px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                           className="w-full px-3 py-2 rounded text-sm"
+                           style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                         />
                      </div>
-                     <div className="grid grid-cols-2 gap-2">
+                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                           <label className="block text-xs text-gray-500 mb-0.5">Departure</label>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>DEPARTURE</label>
                            <input
                               type="datetime-local"
                               value={trainDepartureTime}
                               onChange={(e) => setTrainDepartureTime(e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                            />
                         </div>
                         <div>
-                           <label className="block text-xs text-gray-500 mb-0.5">Arrival</label>
+                           <label className="block text-xs font-bold mb-1" style={{ color: '#5c5445' }}>ARRIVAL</label>
                            <input
                               type="datetime-local"
                               value={trainArrivalTime}
                               onChange={(e) => setTrainArrivalTime(e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-2 rounded text-sm"
+                              style={{ background: '#fff', border: '1px solid #5c5445', color: '#2c2416' }}
                            />
                         </div>
                      </div>
                      <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                        className="w-full py-2 rounded font-bold text-sm transition-all hover:scale-[1.02] disabled:opacity-50"
+                        style={{
+                           background: 'linear-gradient(135deg, #c9a227, #a88520)',
+                           color: '#2c2416',
+                           border: '2px solid #2c2416',
+                        }}
                      >
-                        {isSubmitting ? 'Adding...' : 'Add Train'}
+                        {isSubmitting ? 'Adding...' : '✓ Add Train'}
                      </button>
                   </form>
                )}
             </div>
          )}
 
-         {/* Content */}
-         <div className="space-y-2 max-h-48 overflow-y-auto">
+         {/* List */}
+         <div className="space-y-2 max-h-64 overflow-y-auto">
             {activeTab === 'flights' ? (
                flights.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-2">
-                     No flights added yet
-                  </p>
+                  <div className="text-center py-4">
+                     <p className="text-sm" style={{ color: '#5c5445' }}>No flights added</p>
+                  </div>
                ) : (
                   flights.map((flight) => (
                      <div
                         key={flight.id}
-                        className="bg-gray-50 rounded-lg p-2 flex items-start justify-between group"
+                        className="rounded-lg overflow-hidden relative group"
+                        style={{
+                           background: 'linear-gradient(to right, #fff 0%, #fff 75%, #f5f0e6 75%)',
+                           border: '1px dashed #5c5445',
+                        }}
                      >
-                        <div className="flex-1 min-w-0">
-                           <div className="flex items-center gap-2">
-                              <PaperAirplaneIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                              <span className="font-medium text-sm truncate">
-                                 {flight.departureAirport} → {flight.arrivalAirport}
-                              </span>
-                           </div>
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                              {flight.airline && <span>{flight.airline}</span>}
-                              {flight.airline && flight.number && <span> · </span>}
-                              {flight.number && <span>{flight.number}</span>}
-                           </div>
-                           {(flight.times.departure || flight.times.arrival) && (
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                                 {formatTime(flight.times.departure)}
-                                 {flight.times.departure && flight.times.arrival && ' → '}
-                                 {formatTime(flight.times.arrival)}
+                        {/* Boarding pass cutouts */}
+                        <div
+                           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
+                           style={{ background: '#f5f0e6' }}
+                        />
+                        <div
+                           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full"
+                           style={{ background: '#f5f0e6' }}
+                        />
+
+                        <div className="p-3 flex items-center gap-3">
+                           <div className="flex items-center gap-2 flex-1">
+                              <div className="text-center">
+                                 <div className="text-lg font-bold" style={{ color: '#1e4d8c' }}>
+                                    {flight.departureAirport}
+                                 </div>
+                                 {flight.times.departure && (
+                                    <div className="text-xs" style={{ color: '#5c5445' }}>
+                                       {formatTime(flight.times.departure)}
+                                    </div>
+                                 )}
                               </div>
-                           )}
+                              <div className="flex-1 flex items-center justify-center">
+                                 <div className="flex items-center gap-1">
+                                    <div className="h-px w-6" style={{ background: '#c9a227' }} />
+                                    <span style={{ color: '#1e4d8c' }}>✈</span>
+                                    <div className="h-px w-6" style={{ background: '#c9a227' }} />
+                                 </div>
+                              </div>
+                              <div className="text-center">
+                                 <div className="text-lg font-bold" style={{ color: '#1e4d8c' }}>
+                                    {flight.arrivalAirport}
+                                 </div>
+                                 {flight.times.arrival && (
+                                    <div className="text-xs" style={{ color: '#5c5445' }}>
+                                       {formatTime(flight.times.arrival)}
+                                    </div>
+                                 )}
+                              </div>
+                           </div>
+
+                           {/* Right stub */}
+                           <div
+                              className="border-l-2 border-dashed pl-3 text-center"
+                              style={{ borderColor: '#5c5445' }}
+                           >
+                              {(flight.airline || flight.number) && (
+                                 <div className="text-xs" style={{ color: '#5c5445' }}>
+                                    {flight.airline}
+                                    {flight.airline && flight.number && <br />}
+                                    {flight.number && <span className="font-bold">{flight.number}</span>}
+                                 </div>
+                              )}
+                           </div>
+
+                           {/* Delete button */}
+                           <button
+                              onClick={() => onDeleteFlight(flight.id)}
+                              className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                              style={{ color: '#c41e3a' }}
+                           >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                           </button>
                         </div>
-                        <button
-                           onClick={() => onDeleteFlight(flight.id)}
-                           className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                           title="Delete flight"
-                        >
-                           <TrashIcon className="w-4 h-4" />
-                        </button>
                      </div>
                   ))
                )
             ) : trains.length === 0 ? (
-               <p className="text-sm text-gray-500 text-center py-2">
-                  No trains added yet
-               </p>
+               <div className="text-center py-4">
+                  <p className="text-sm" style={{ color: '#5c5445' }}>No trains added</p>
+               </div>
             ) : (
                trains.map((train) => (
                   <div
                      key={train.id}
-                     className="bg-gray-50 rounded-lg p-2 flex items-start justify-between group"
+                     className="rounded-lg overflow-hidden relative group"
+                     style={{
+                        background: 'linear-gradient(to right, #fff 0%, #fff 75%, #f5f0e6 75%)',
+                        border: '1px dashed #5c5445',
+                     }}
                   >
-                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                           <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 14l-3-3m3 3l3-3M5 12H3m18 0h-2M7 8H5m14 0h-2" />
-                           </svg>
-                           <span className="font-medium text-sm truncate">
-                              {train.departureStation} → {train.arrivalStation}
-                           </span>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                           {train.operator && <span>{train.operator}</span>}
-                           {train.operator && train.number && <span> · </span>}
-                           {train.number && <span>{train.number}</span>}
-                        </div>
-                        {(train.times.departure || train.times.arrival) && (
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                              {formatTime(train.times.departure)}
-                              {train.times.departure && train.times.arrival && ' → '}
-                              {formatTime(train.times.arrival)}
+                     {/* Ticket cutouts */}
+                     <div
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full"
+                        style={{ background: '#f5f0e6' }}
+                     />
+                     <div
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 rounded-full"
+                        style={{ background: '#f5f0e6' }}
+                     />
+
+                     <div className="p-3 flex items-center gap-3">
+                        <div className="flex items-center gap-2 flex-1">
+                           <div className="text-center">
+                              <div className="text-sm font-bold" style={{ color: '#2d5a3d' }}>
+                                 {train.departureStation}
+                              </div>
+                              {train.times.departure && (
+                                 <div className="text-xs" style={{ color: '#5c5445' }}>
+                                    {formatTime(train.times.departure)}
+                                 </div>
+                              )}
                            </div>
-                        )}
+                           <div className="flex-1 flex items-center justify-center">
+                              <div className="flex items-center gap-1">
+                                 <div className="h-px w-6" style={{ background: '#c9a227' }} />
+                                 <span style={{ color: '#2d5a3d' }}>🚂</span>
+                                 <div className="h-px w-6" style={{ background: '#c9a227' }} />
+                              </div>
+                           </div>
+                           <div className="text-center">
+                              <div className="text-sm font-bold" style={{ color: '#2d5a3d' }}>
+                                 {train.arrivalStation}
+                              </div>
+                              {train.times.arrival && (
+                                 <div className="text-xs" style={{ color: '#5c5445' }}>
+                                    {formatTime(train.times.arrival)}
+                                 </div>
+                              )}
+                           </div>
+                        </div>
+
+                        {/* Right stub */}
+                        <div
+                           className="border-l-2 border-dashed pl-3 text-center"
+                           style={{ borderColor: '#5c5445' }}
+                        >
+                           {(train.operator || train.number) && (
+                              <div className="text-xs" style={{ color: '#5c5445' }}>
+                                 {train.operator}
+                                 {train.operator && train.number && <br />}
+                                 {train.number && <span className="font-bold">{train.number}</span>}
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Delete button */}
+                        <button
+                           onClick={() => onDeleteTrain(train.id)}
+                           className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                           style={{ color: '#c41e3a' }}
+                        >
+                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                           </svg>
+                        </button>
                      </div>
-                     <button
-                        onClick={() => onDeleteTrain(train.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                        title="Delete train"
-                     >
-                        <TrashIcon className="w-4 h-4" />
-                     </button>
                   </div>
                ))
             )}

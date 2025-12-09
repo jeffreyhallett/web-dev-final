@@ -5,7 +5,6 @@ import { Trip, Activity } from '@/types';
 import { useState, useCallback } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
-import { TrashIcon } from '@heroicons/react/24/outline';
 import AddTripModal from '@/components/trip/addTripModal';
 import AddCityModal from '@/components/city/addCityModal';
 import AddActivityModal from '@/components/activity/addActivityModal';
@@ -69,8 +68,6 @@ export default function HomePage() {
 
    // Handler to update activities within a trip
    const handleUpdateActivities = useCallback((newActivities: Activity[]) => {
-      // Activities are managed through individual API calls in TripView
-      // This handler is kept for component compatibility
       refetchTrip();
    }, [refetchTrip]);
 
@@ -83,7 +80,6 @@ export default function HomePage() {
          if (updates.accommodation) {
             for (const acc of updates.accommodation) {
                if (acc.id && !acc.id.startsWith('temp-')) {
-                  // Update existing accommodation
                   await updateAccommodation({
                      tripId: selectedTripId,
                      accommodationId: acc.id,
@@ -97,7 +93,6 @@ export default function HomePage() {
                      },
                   });
                } else if (acc.name) {
-                  // Create new accommodation
                   await createAccommodation({
                      tripId: selectedTripId,
                      data: {
@@ -117,7 +112,6 @@ export default function HomePage() {
          if (updates.notes) {
             for (const note of updates.notes) {
                if (note.id && !note.id.startsWith('temp-')) {
-                  // Update existing note
                   await updateNote({
                      tripId: selectedTripId,
                      noteId: note.id,
@@ -127,7 +121,6 @@ export default function HomePage() {
                      },
                   });
                } else if (note.content) {
-                  // Create new note
                   await createNote({
                      tripId: selectedTripId,
                      data: {
@@ -309,8 +302,16 @@ export default function HomePage() {
    // Loading state
    if (tripsLoading) {
       return (
-         <div className="flex items-center justify-center h-screen">
-            <div className="text-gray-500">Loading trips...</div>
+         <div
+            className="min-h-screen flex items-center justify-center"
+            style={{ background: '#f5f0e6' }}
+         >
+            <div className="text-center">
+               <div className="text-6xl mb-4 animate-bounce">🌍</div>
+               <p className="text-lg font-semibold" style={{ color: '#2c2416', fontFamily: 'Georgia, serif' }}>
+                  Loading your adventures...
+               </p>
+            </div>
          </div>
       );
    }
@@ -318,8 +319,26 @@ export default function HomePage() {
    // Error state
    if (tripsError) {
       return (
-         <div className="flex items-center justify-center h-screen">
-            <div className="text-red-500">Error loading trips: {tripsError.message}</div>
+         <div
+            className="min-h-screen flex items-center justify-center"
+            style={{ background: '#f5f0e6' }}
+         >
+            <div
+               className="text-center p-8 rounded-lg"
+               style={{
+                  background: '#fff',
+                  border: '2px solid #c41e3a',
+                  boxShadow: '4px 4px 0 #c41e3a',
+               }}
+            >
+               <div className="text-5xl mb-4">⚠️</div>
+               <p className="font-semibold mb-2" style={{ color: '#c41e3a' }}>
+                  Oops! Something went wrong
+               </p>
+               <p className="text-sm" style={{ color: '#5c5445' }}>
+                  {tripsError.message}
+               </p>
+            </div>
          </div>
       );
    }
@@ -327,11 +346,13 @@ export default function HomePage() {
    const tripsList = trips || [];
 
    return (
-      <div className="flex flex-col h-screen">
+      <div className="min-h-screen" style={{ background: '#f5f0e6' }}>
          <Header view={view} onViewChange={setView} />
-         <div className="flex flex-1 overflow-hidden">
-            <aside className="w-64 flex flex-col">
-               <div className="px-4 py-6 flex-1">
+
+         <div className="flex gap-4 p-4">
+            {/* Sidebar */}
+            <aside className="w-72 flex-shrink-0">
+               <div className="sticky top-4">
                   <TripList
                      trips={tripsList}
                      selectedTripId={selectedTripId}
@@ -343,77 +364,208 @@ export default function HomePage() {
                   />
                </div>
             </aside>
-            <main className="flex-1 flex flex-col px-4 py-6 gap-4 overflow-hidden">
+
+            {/* Main content */}
+            <main className="flex-1 min-w-0">
                {/* Trip Header Strip */}
                {selectedTrip && (
-                  <div className="bg-white rounded-xl shadow-sm px-6 py-4">
-                     <div className="flex items-center justify-between">
-                        <div>
-                           <h1 className="text-lg font-semibold text-gray-800">
-                              {selectedTrip.name || 'Untitled Trip'}
-                           </h1>
-                           <p className="text-gray-500 text-sm mt-0.5">
-                              {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'destination' : 'destinations'}
-                              {selectedTrip.dates.arrival && selectedTrip.dates.departure && (
-                                 <span className="ml-2 text-gray-400">
-                                    {selectedTrip.dates.arrival} — {selectedTrip.dates.departure}
-                                 </span>
-                              )}
-                           </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                           <div className="flex items-center gap-1">
-                              {selectedTrip.cities.map((city) => (
-                                 <button
-                                    key={city.id}
-                                    onClick={() => setSelectedCityId(city.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                                       selectedCityId === city.id
-                                          ? 'bg-gray-800 text-white'
-                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
+                  <div
+                     className="mb-4 rounded-lg overflow-hidden"
+                     style={{
+                        background: 'linear-gradient(135deg, #fff 0%, #f5f0e6 100%)',
+                        border: '2px solid #5c5445',
+                        boxShadow: '0 4px 20px rgba(44, 36, 22, 0.1)',
+                     }}
+                  >
+                     <div className="px-6 py-4">
+                        <div className="flex items-center justify-between">
+                           <div className="flex items-center gap-4">
+                              {/* Passport stamp style */}
+                              <div
+                                 className="w-16 h-16 rounded-full flex items-center justify-center"
+                                 style={{
+                                    border: '3px solid #c41e3a',
+                                    color: '#c41e3a',
+                                    transform: 'rotate(-8deg)',
+                                 }}
+                              >
+                                 <div className="text-center">
+                                    <div className="text-xs font-bold tracking-wider">TRIP</div>
+                                    <div className="text-lg font-bold">{selectedTrip.cities.length}</div>
+                                 </div>
+                              </div>
+
+                              <div>
+                                 <h1
+                                    className="text-2xl font-bold"
+                                    style={{ color: '#2c2416', fontFamily: 'Georgia, serif' }}
                                  >
-                                    {city.name}
-                                 </button>
-                              ))}
+                                    {selectedTrip.name || 'Untitled Adventure'}
+                                 </h1>
+                                 <p className="text-sm mt-1" style={{ color: '#5c5445' }}>
+                                    {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'destination' : 'destinations'}
+                                    {selectedTrip.dates.arrival && selectedTrip.dates.departure && (
+                                       <span className="ml-2">
+                                          📅 {selectedTrip.dates.arrival} → {selectedTrip.dates.departure}
+                                       </span>
+                                    )}
+                                 </p>
+                              </div>
                            </div>
-                           <div className="w-px h-6 bg-gray-200" />
-                           <button
-                              onClick={handleDeleteTrip}
-                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete trip"
-                           >
-                              <TrashIcon className="w-5 h-5" />
-                           </button>
+
+                           <div className="flex items-center gap-3">
+                              {/* City tabs */}
+                              <div className="flex items-center gap-1">
+                                 {selectedTrip.cities.map((city) => (
+                                    <button
+                                       key={city.id}
+                                       onClick={() => setSelectedCityId(city.id)}
+                                       className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+                                       style={{
+                                          background: selectedCityId === city.id
+                                             ? 'linear-gradient(135deg, #2c2416 0%, #5c5445 100%)'
+                                             : '#fff',
+                                          color: selectedCityId === city.id ? '#e8d48b' : '#2c2416',
+                                          border: selectedCityId === city.id
+                                             ? '2px solid #c9a227'
+                                             : '2px solid #e8e0d0',
+                                          boxShadow: selectedCityId === city.id
+                                             ? '0 2px 10px rgba(201, 162, 39, 0.3)'
+                                             : 'none',
+                                       }}
+                                    >
+                                       {city.name}
+                                    </button>
+                                 ))}
+                              </div>
+
+                              <div
+                                 className="w-px h-8"
+                                 style={{ background: '#e8e0d0' }}
+                              />
+
+                              {/* Delete button */}
+                              <button
+                                 onClick={handleDeleteTrip}
+                                 className="p-2 rounded-lg transition-all duration-200 hover:scale-105"
+                                 style={{
+                                    color: '#c41e3a',
+                                    border: '2px solid #c41e3a',
+                                    background: 'transparent',
+                                 }}
+                                 title="Delete trip"
+                              >
+                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                 </svg>
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+
+                     {/* Decorative border */}
+                     <div
+                        className="h-1"
+                        style={{
+                           background: 'linear-gradient(90deg, #c9a227, #e8d48b, #c9a227)',
+                        }}
+                     />
+                  </div>
+               )}
+
+               {/* Main trip view */}
+               {selectedTrip && selectedCity ? (
+                  <TripView
+                     trip={selectedTrip}
+                     city={selectedCity}
+                     activities={selectedTrip.activities.filter(a => a.city.id === selectedCityId)}
+                     onUpdateActivities={handleUpdateActivities}
+                     onUpdateTrip={handleUpdateTrip}
+                     onAddActivity={handleOpenAddActivity}
+                     onDeleteActivity={handleDeleteActivity}
+                     onAddRecommendedActivity={handleAddRecommendedActivity}
+                     onAddFlight={handleAddFlight}
+                     onAddTrain={handleAddTrain}
+                     onDeleteFlight={handleDeleteFlight}
+                     onDeleteTrain={handleDeleteTrain}
+                  />
+               ) : (
+                  /* Empty state */
+                  <div
+                     className="rounded-lg p-12 text-center"
+                     style={{
+                        background: 'linear-gradient(135deg, #fff 0%, #f5f0e6 100%)',
+                        border: '2px dashed #5c5445',
+                        minHeight: '400px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                     }}
+                  >
+                     <div className="text-8xl mb-6">🗺️</div>
+                     <h2
+                        className="text-2xl font-bold mb-2"
+                        style={{ color: '#2c2416', fontFamily: 'Georgia, serif' }}
+                     >
+                        {tripsList.length === 0 ? 'Start Your Journey' : 'Select a Destination'}
+                     </h2>
+                     <p className="mb-6" style={{ color: '#5c5445' }}>
+                        {tripsList.length === 0
+                           ? 'Create your first trip to begin planning your adventure'
+                           : 'Choose a trip and city from the sidebar to view details'}
+                     </p>
+                     {tripsList.length === 0 && (
+                        <button
+                           onClick={handleOpenCreateTrip}
+                           className="px-6 py-3 font-bold transition-all duration-200 hover:scale-105"
+                           style={{
+                              background: 'linear-gradient(135deg, #c9a227 0%, #a88520 100%)',
+                              color: '#2c2416',
+                              borderRadius: '8px',
+                              boxShadow: '4px 4px 0 #5c5445',
+                              border: '2px solid #2c2416',
+                           }}
+                        >
+                           ✈️ Plan Your First Adventure
+                        </button>
+                     )}
+
+                     {/* Decorative stamps */}
+                     <div className="flex gap-4 mt-8 opacity-30">
+                        <div
+                           className="px-3 py-1 text-xs font-bold tracking-wider"
+                           style={{
+                              border: '2px solid #c41e3a',
+                              color: '#c41e3a',
+                              transform: 'rotate(-12deg)',
+                           }}
+                        >
+                           WANDERLUST
+                        </div>
+                        <div
+                           className="px-3 py-1 text-xs font-bold tracking-wider"
+                           style={{
+                              border: '2px solid #1e4d8c',
+                              color: '#1e4d8c',
+                              transform: 'rotate(8deg)',
+                           }}
+                        >
+                           EXPLORE
+                        </div>
+                        <div
+                           className="px-3 py-1 text-xs font-bold tracking-wider"
+                           style={{
+                              border: '2px solid #2d5a3d',
+                              color: '#2d5a3d',
+                              transform: 'rotate(-5deg)',
+                           }}
+                        >
+                           DISCOVER
                         </div>
                      </div>
                   </div>
                )}
-
-               <div className="flex-1 w-full overflow-hidden">
-                  {selectedTrip && selectedCity ? (
-                     <TripView
-                        trip={selectedTrip}
-                        city={selectedCity}
-                        activities={selectedTrip.activities.filter(a => a.city.id === selectedCityId)}
-                        onUpdateActivities={handleUpdateActivities}
-                        onUpdateTrip={handleUpdateTrip}
-                        onAddActivity={handleOpenAddActivity}
-                        onDeleteActivity={handleDeleteActivity}
-                        onAddRecommendedActivity={handleAddRecommendedActivity}
-                        onAddFlight={handleAddFlight}
-                        onAddTrain={handleAddTrain}
-                        onDeleteFlight={handleDeleteFlight}
-                        onDeleteTrain={handleDeleteTrain}
-                     />
-                  ) : (
-                     <div className="flex items-center justify-center h-full text-gray-500">
-                        {tripsList.length === 0
-                           ? 'Create a trip to get started'
-                           : 'Select a trip and city to get started'}
-                     </div>
-                  )}
-               </div>
             </main>
          </div>
 

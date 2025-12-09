@@ -2,7 +2,6 @@
 
 import { Trip } from '@/types';
 import { useState } from 'react';
-import { PlusIcon, ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 interface TripListProps {
    trips: Trip[];
@@ -28,140 +27,320 @@ export default function TripList({
    const selectedTrip = trips.find(t => t.id === selectedTripId);
 
    return (
-      <div className="bg-gray-300 rounded-lg shadow-sm p-6 h-full flex flex-col">
-         <h2 className="text-lg font-semibold mb-4 text-gray-700">Your Trips</h2>
-
-         {/* Trip Selector */}
-         <div className="mb-6">
-            <div className="relative">
-               <button
-                  onClick={() => setIsTripDropdownOpen(!isTripDropdownOpen)}
-                  className="w-full bg-white rounded-xl p-4 shadow-sm border-2 border-transparent hover:border-blue-200 transition-all text-left"
+      <div
+         className="h-full flex flex-col rounded-lg overflow-hidden"
+         style={{
+            background: 'linear-gradient(180deg, #f5f0e6 0%, #e8e0d0 100%)',
+            boxShadow: '0 4px 20px rgba(44, 36, 22, 0.15)',
+            border: '2px solid #5c5445',
+         }}
+      >
+         {/* Header - Like a travel document */}
+         <div
+            className="px-4 py-3"
+            style={{
+               background: 'linear-gradient(135deg, #2c2416 0%, #5c5445 100%)',
+               borderBottom: '3px solid #c9a227',
+            }}
+         >
+            <div className="flex items-center gap-3">
+               <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-lg"
+                  style={{
+                     background: 'linear-gradient(135deg, #c9a227, #e8d48b)',
+                  }}
                >
-                  {selectedTrip ? (
-                     <div className="flex items-center justify-between">
-                        <div>
-                           <div className="font-semibold text-gray-800">
-                              {selectedTrip.name || `Trip ${selectedTrip.id}`}
-                           </div>
-                           <div className="text-xs text-gray-500 mt-1">
-                              {selectedTrip.cities.length} {selectedTrip.cities.length === 1 ? 'city' : 'cities'}
-                              {selectedTrip.dates.arrival && (
-                                 <span className="ml-2">
-                                    {selectedTrip.dates.arrival}
-                                 </span>
-                              )}
-                           </div>
-                        </div>
-                        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform ${isTripDropdownOpen ? 'rotate-180' : ''}`} />
-                     </div>
-                  ) : (
-                     <div className="flex items-center justify-between text-gray-500">
-                        <span>Select a trip...</span>
-                        <ChevronDownIcon className={`w-5 h-5 transition-transform ${isTripDropdownOpen ? 'rotate-180' : ''}`} />
-                     </div>
-                  )}
-               </button>
-
-               {/* Dropdown Menu */}
-               {isTripDropdownOpen && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-10">
-                     {trips.map(trip => (
-                        <button
-                           key={trip.id}
-                           onClick={() => {
-                              onSelectTrip(trip.id);
-                              if (trip.cities.length > 0) {
-                                 onSelectCity(trip.cities[0].id);
-                              }
-                              setIsTripDropdownOpen(false);
-                           }}
-                           className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0 ${
-                              selectedTripId === trip.id ? 'bg-blue-50' : ''
-                           }`}
-                        >
-                           <div className="font-medium text-gray-800">
-                              {trip.name || `Trip ${trip.id}`}
-                           </div>
-                           <div className="text-xs text-gray-500 mt-0.5">
-                              {trip.cities.length} {trip.cities.length === 1 ? 'city' : 'cities'}
-                           </div>
-                        </button>
-                     ))}
-
-                     {/* Add New Trip Button */}
-                     <button
-                        onClick={() => {
-                           setIsTripDropdownOpen(false);
-                           onCreateTrip?.();
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-blue-600 font-medium flex items-center gap-2"
-                     >
-                        <PlusIcon className="w-4 h-4" />
-                        Create New Trip
-                     </button>
-                  </div>
-               )}
+                  📋
+               </div>
+               <div>
+                  <h2
+                     className="font-bold tracking-wider text-sm"
+                     style={{ color: '#e8d48b' }}
+                  >
+                     ITINERARY
+                  </h2>
+                  <p className="text-xs" style={{ color: 'rgba(232, 212, 139, 0.6)' }}>
+                     {trips.length} {trips.length === 1 ? 'journey' : 'journeys'}
+                  </p>
+               </div>
             </div>
          </div>
 
-         {/* Cities List for Selected Trip */}
-         {selectedTrip && (
-            <>
-               <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                     Destinations
-                  </h3>
-                  <span className="text-xs text-gray-400">
-                     {selectedTrip.cities.length} stops
-                  </span>
-               </div>
+         <div className="flex-1 overflow-y-auto p-4">
+            {/* Trip Selector - Luggage tag style */}
+            <div className="mb-4">
+               <div className="relative">
+                  <button
+                     onClick={() => setIsTripDropdownOpen(!isTripDropdownOpen)}
+                     className="w-full text-left transition-all duration-200 hover:scale-[1.02]"
+                     style={{
+                        background: 'linear-gradient(135deg, #fff 0%, #f5f0e6 100%)',
+                        border: '2px solid #5c5445',
+                        borderRadius: '8px 8px 8px 24px',
+                        padding: '16px 16px 16px 28px',
+                        boxShadow: '3px 3px 0 #5c5445',
+                     }}
+                  >
+                     {/* Luggage hole */}
+                     <div
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full"
+                        style={{
+                           border: '2px solid #5c5445',
+                           background: '#f5f0e6',
+                        }}
+                     />
 
-               <ul className="space-y-2 flex-1 overflow-y-auto">
-                  {selectedTrip.cities.map((city, index) => (
-                     <li key={city.id}>
+                     {selectedTrip ? (
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <div
+                                 className="font-bold"
+                                 style={{ color: '#2c2416', fontFamily: 'Georgia, serif' }}
+                              >
+                                 {selectedTrip.name || 'Untitled Adventure'}
+                              </div>
+                              <div className="text-xs mt-1 flex items-center gap-2" style={{ color: '#5c5445' }}>
+                                 <span>🏙️ {selectedTrip.cities.length} stops</span>
+                                 {selectedTrip.dates.arrival && (
+                                    <span>📅 {selectedTrip.dates.arrival}</span>
+                                 )}
+                              </div>
+                           </div>
+                           <svg
+                              className={`w-5 h-5 transition-transform duration-200 ${isTripDropdownOpen ? 'rotate-180' : ''}`}
+                              style={{ color: '#5c5445' }}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                           >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                           </svg>
+                        </div>
+                     ) : (
+                        <div className="flex items-center justify-between" style={{ color: '#5c5445' }}>
+                           <span className="italic">Select your journey...</span>
+                           <svg
+                              className={`w-5 h-5 transition-transform duration-200 ${isTripDropdownOpen ? 'rotate-180' : ''}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                           >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                           </svg>
+                        </div>
+                     )}
+                  </button>
+
+                  {/* Dropdown */}
+                  {isTripDropdownOpen && (
+                     <div
+                        className="absolute top-full left-0 right-0 mt-2 z-20 overflow-hidden"
+                        style={{
+                           background: '#fff',
+                           border: '2px solid #5c5445',
+                           borderRadius: '8px',
+                           boxShadow: '0 8px 30px rgba(44, 36, 22, 0.2)',
+                        }}
+                     >
+                        {trips.map((trip, index) => (
+                           <button
+                              key={trip.id}
+                              onClick={() => {
+                                 onSelectTrip(trip.id);
+                                 if (trip.cities.length > 0) {
+                                    onSelectCity(trip.cities[0].id);
+                                 }
+                                 setIsTripDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-4 py-3 transition-colors"
+                              style={{
+                                 background: selectedTripId === trip.id ? '#f5f0e6' : 'transparent',
+                                 borderBottom: index < trips.length - 1 ? '1px dashed #e8e0d0' : 'none',
+                              }}
+                           >
+                              <div className="font-medium" style={{ color: '#2c2416' }}>
+                                 {trip.name || 'Untitled Adventure'}
+                              </div>
+                              <div className="text-xs mt-0.5" style={{ color: '#5c5445' }}>
+                                 {trip.cities.length} {trip.cities.length === 1 ? 'destination' : 'destinations'}
+                              </div>
+                           </button>
+                        ))}
+
+                        {/* New trip button */}
                         <button
-                           onClick={() => onSelectCity(city.id)}
-                           className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
-                              selectedCityId === city.id
-                                 ? 'bg-blue-500 text-white shadow-md'
-                                 : 'bg-white hover:bg-gray-50 text-gray-800 shadow-sm'
-                           }`}
+                           onClick={() => {
+                              setIsTripDropdownOpen(false);
+                              onCreateTrip?.();
+                           }}
+                           className="w-full text-left px-4 py-3 flex items-center gap-2 transition-colors hover:bg-[#f5f0e6]"
+                           style={{
+                              borderTop: '2px solid #5c5445',
+                              color: '#c9a227',
+                              fontWeight: 'bold',
+                           }}
                         >
-                           <div className="flex items-center gap-3">
-                              <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                                 selectedCityId === city.id
-                                    ? 'bg-blue-400 text-white'
-                                    : 'bg-gray-100 text-gray-500'
-                              }`}>
+                           <span className="text-lg">✈️</span>
+                           Plan New Journey
+                        </button>
+                     </div>
+                  )}
+               </div>
+            </div>
+
+            {/* Destinations list */}
+            {selectedTrip && (
+               <>
+                  <div className="mb-3 flex items-center justify-between">
+                     <h3
+                        className="text-xs font-bold tracking-widest uppercase"
+                        style={{ color: '#5c5445' }}
+                     >
+                        Destinations
+                     </h3>
+                     <div
+                        className="text-xs px-2 py-0.5 rounded"
+                        style={{
+                           background: '#2c2416',
+                           color: '#e8d48b',
+                        }}
+                     >
+                        {selectedTrip.cities.length} stops
+                     </div>
+                  </div>
+
+                  {/* Route line visualization */}
+                  <div className="space-y-0">
+                     {selectedTrip.cities.map((city, index) => (
+                        <div key={city.id} className="relative">
+                           {/* Connecting line */}
+                           {index < selectedTrip.cities.length - 1 && (
+                              <div
+                                 className="absolute left-[18px] top-[40px] w-0.5 h-[calc(100%-20px)]"
+                                 style={{
+                                    background: 'repeating-linear-gradient(to bottom, #5c5445 0, #5c5445 4px, transparent 4px, transparent 8px)',
+                                 }}
+                              />
+                           )}
+
+                           <button
+                              onClick={() => onSelectCity(city.id)}
+                              className="w-full text-left py-2 px-2 flex items-center gap-3 transition-all duration-200 rounded-lg group"
+                              style={{
+                                 background: selectedCityId === city.id
+                                    ? 'linear-gradient(135deg, #2c2416 0%, #5c5445 100%)'
+                                    : 'transparent',
+                              }}
+                           >
+                              {/* Stop marker */}
+                              <div
+                                 className="relative z-10 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                                 style={{
+                                    background: selectedCityId === city.id
+                                       ? 'linear-gradient(135deg, #c9a227, #e8d48b)'
+                                       : '#fff',
+                                    border: selectedCityId === city.id
+                                       ? '2px solid #c9a227'
+                                       : '2px solid #5c5445',
+                                    color: selectedCityId === city.id ? '#2c2416' : '#5c5445',
+                                    boxShadow: selectedCityId === city.id
+                                       ? '0 2px 10px rgba(201, 162, 39, 0.4)'
+                                       : 'none',
+                                 }}
+                              >
                                  {index + 1}
                               </div>
-                              <div className="flex-1">
-                                 <div className="font-medium">{city.name}</div>
-                                 <div className={`text-xs ${
-                                    selectedCityId === city.id ? 'text-blue-100' : 'text-gray-400'
-                                 }`}>
+
+                              {/* City info */}
+                              <div className="flex-1 min-w-0">
+                                 <div
+                                    className="font-semibold truncate"
+                                    style={{
+                                       color: selectedCityId === city.id ? '#e8d48b' : '#2c2416',
+                                       fontFamily: 'Georgia, serif',
+                                    }}
+                                 >
+                                    {city.name}
+                                 </div>
+                                 <div
+                                    className="text-xs truncate"
+                                    style={{
+                                       color: selectedCityId === city.id ? 'rgba(232, 212, 139, 0.7)' : '#5c5445',
+                                    }}
+                                 >
                                     {city.country}
                                  </div>
                               </div>
-                              <MapPinIcon className={`w-4 h-4 ${
-                                 selectedCityId === city.id ? 'text-blue-200' : 'text-gray-300'
-                              }`} />
-                           </div>
-                        </button>
-                     </li>
-                  ))}
-               </ul>
 
-               <button
-                  onClick={onAddCity}
-                  className="rounded-xl mt-4 w-full px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm font-medium"
-               >
-                  <PlusIcon className="h-5 w-5" />
-                  Add Destination
-               </button>
-            </>
-         )}
+                              {/* Arrow indicator */}
+                              {selectedCityId === city.id && (
+                                 <svg className="w-4 h-4" style={{ color: '#c9a227' }} fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                 </svg>
+                              )}
+                           </button>
+                        </div>
+                     ))}
+                  </div>
+
+                  {/* Add destination button */}
+                  <button
+                     onClick={onAddCity}
+                     className="mt-4 w-full py-3 px-4 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02]"
+                     style={{
+                        background: 'linear-gradient(135deg, #c9a227 0%, #a88520 100%)',
+                        color: '#2c2416',
+                        fontWeight: 'bold',
+                        borderRadius: '8px',
+                        boxShadow: '3px 3px 0 #5c5445',
+                        border: '2px solid #2c2416',
+                     }}
+                  >
+                     <span className="text-lg">📍</span>
+                     Add Destination
+                  </button>
+               </>
+            )}
+
+            {/* Empty state */}
+            {!selectedTrip && trips.length === 0 && (
+               <div className="text-center py-8">
+                  <div className="text-5xl mb-4">🗺️</div>
+                  <p className="font-semibold mb-2" style={{ color: '#2c2416' }}>
+                     No journeys yet
+                  </p>
+                  <p className="text-sm mb-4" style={{ color: '#5c5445' }}>
+                     Start planning your next adventure!
+                  </p>
+                  <button
+                     onClick={onCreateTrip}
+                     className="px-4 py-2 font-bold transition-all duration-200 hover:scale-105"
+                     style={{
+                        background: 'linear-gradient(135deg, #c9a227 0%, #a88520 100%)',
+                        color: '#2c2416',
+                        borderRadius: '8px',
+                        boxShadow: '3px 3px 0 #5c5445',
+                        border: '2px solid #2c2416',
+                     }}
+                  >
+                     ✈️ Plan Your First Trip
+                  </button>
+               </div>
+            )}
+         </div>
+
+         {/* Footer decoration */}
+         <div
+            className="px-4 py-2 text-center"
+            style={{
+               background: '#2c2416',
+               borderTop: '2px solid #c9a227',
+            }}
+         >
+            <p className="text-xs tracking-widest" style={{ color: 'rgba(232, 212, 139, 0.5)' }}>
+               ✦ ADVENTURE AWAITS ✦
+            </p>
+         </div>
       </div>
    );
 }

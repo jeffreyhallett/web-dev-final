@@ -130,11 +130,11 @@ export default function TripView({
 
    return (
       <>
-         <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full">
-            <div className="flex flex-col">
-               <div className="bg-white rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+         <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full min-h-0">
+            <div className="flex flex-col min-h-0">
+               <div className="bg-white rounded-xl shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
                   {/* Fixed Header */}
-                  <div className="flex justify-between items-center p-4 border-b border-gray-100">
+                  <div className="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-100">
                      <h3 className="text-lg font-semibold">Planned Activities</h3>
                      <button
                         onClick={onAddActivity}
@@ -146,7 +146,7 @@ export default function TripView({
                   </div>
 
                   {/* Scrollable Activities List */}
-                  <div className="flex-1 overflow-y-auto p-4">
+                  <div className="flex-1 min-h-0 overflow-y-auto p-4">
                      <div className="space-y-3">
                         {plannedActivities.length === 0 ? (
                            <p className="text-gray-500 text-sm">
@@ -166,7 +166,7 @@ export default function TripView({
 
                   {/* Fixed Footer Button */}
                   {onAddRecommendedActivity && (
-                     <div className="p-4 border-t border-gray-100">
+                     <div className="flex-shrink-0 p-4 border-t border-gray-100">
                         <button
                            onClick={() => setShowRecommendationsModal(true)}
                            className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg"

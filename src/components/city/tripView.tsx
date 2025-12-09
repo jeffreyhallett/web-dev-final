@@ -14,6 +14,7 @@ interface TripViewProps {
    onUpdateActivities: (activities: Activity[]) => void;
    onUpdateTrip: (updates: Partial<Trip>) => void;
    onAddActivity?: () => void;
+   onDeleteActivity?: (activityId: string) => Promise<void>;
    onAddFlight?: (data: {
       departureAirport: string;
       arrivalAirport: string;
@@ -41,6 +42,7 @@ export default function TripView({
    onUpdateActivities,
    onUpdateTrip,
    onAddActivity,
+   onDeleteActivity,
    onAddFlight,
    onAddTrain,
    onDeleteFlight,
@@ -120,7 +122,11 @@ export default function TripView({
                            </p>
                         ) : (
                            plannedActivities.map((activity) => (
-                              <ActivityCard key={activity.id} activity={activity} />
+                              <ActivityCard
+                                 key={activity.id}
+                                 activity={activity}
+                                 onDelete={onDeleteActivity}
+                              />
                            ))
                         )}
                      </div>

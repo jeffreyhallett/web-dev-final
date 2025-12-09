@@ -20,6 +20,7 @@ import {
    useUpdateNote,
    useCreateNote,
    useCreateActivity,
+   useDeleteActivity,
    useCreateFlight,
    useDeleteFlight,
    useCreateTrain,
@@ -51,6 +52,7 @@ export default function HomePage() {
    const { mutate: createNote } = useCreateNote();
    const { mutate: updateNote } = useUpdateNote();
    const { mutate: createActivity } = useCreateActivity();
+   const { mutate: deleteActivity } = useDeleteActivity();
    const { mutate: createFlight } = useCreateFlight();
    const { mutate: deleteFlight } = useDeleteFlight();
    const { mutate: createTrain } = useCreateTrain();
@@ -223,6 +225,16 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
 
+   // Handler to delete activity
+   const handleDeleteActivity = useCallback(async (activityId: string) => {
+      if (!selectedTripId) return;
+      await deleteActivity({
+         tripId: selectedTripId,
+         activityId,
+      });
+      await refetchTrip();
+   }, [selectedTripId, deleteActivity, refetchTrip]);
+
    // Handler to add flight
    const handleAddFlight = useCallback(async (data: {
       departureAirport: string;
@@ -370,6 +382,7 @@ export default function HomePage() {
                         onUpdateActivities={handleUpdateActivities}
                         onUpdateTrip={handleUpdateTrip}
                         onAddActivity={handleOpenAddActivity}
+                        onDeleteActivity={handleDeleteActivity}
                         onAddFlight={handleAddFlight}
                         onAddTrain={handleAddTrain}
                         onDeleteFlight={handleDeleteFlight}

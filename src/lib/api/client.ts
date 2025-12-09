@@ -271,3 +271,27 @@ export const notesApi = {
          method: 'DELETE',
       }),
 };
+
+// ============ Recommendations ============
+export interface RecommendedActivity {
+   name: string;
+   description: string;
+   location: string;
+   category: 'sightseeing' | 'food' | 'culture' | 'nature' | 'entertainment' | 'shopping' | 'nightlife';
+   estimatedDuration?: string;
+   tip?: string;
+}
+
+export interface RecommendationsResponse {
+   recommendations: RecommendedActivity[];
+   city: string;
+   country: string;
+}
+
+export const recommendationsApi = {
+   get: (data: { city: string; country: string; existingActivities?: string[] }) =>
+      fetchApi<RecommendationsResponse>('/recommendations', {
+         method: 'POST',
+         body: JSON.stringify(data),
+      }),
+};

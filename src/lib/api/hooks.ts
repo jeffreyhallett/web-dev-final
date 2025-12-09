@@ -10,6 +10,8 @@ import {
    flightsApi,
    trainsApi,
    notesApi,
+   recommendationsApi,
+   RecommendationsResponse,
 } from './client';
 
 // ============ Generic Hook Types ============
@@ -525,4 +527,38 @@ export function useDeleteTrain(): UseMutationResult<{ success: boolean; deletedI
    };
 
    return { mutate, isLoading, error };
+}
+
+// ============ Recommendations Hooks ============
+export function useRecommendations(
+   city: string | null,
+   country: string | null,
+   existingActivities: string[]
+): UseQueryResult<RecommendationsResponse> & { fetch: () => Promise<void> } {
+   const [data, setData] = useState<RecommendationsResponse | null>(null);
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState<Error | null>(null);
+
+   const fetchData = useCallback(async () => {
+      if (!city || !country) {
+         setData(null);
+         return;
+      }
+      setIsLoading(true);
+      setError(null);
+      try {
+         const recommendations = await recommendationsApi.get({
+            city,
+            country,
+            existingActivities,
+         });
+         setData(recommendations);
+      } catch (err) {
+         setError(err instanceof Error ? err : new Error('Failed to fetch recommendations'));
+      } finally {
+         setIsLoading(false);
+      }
+   }, [city, country, existingActivities]);
+
+   return { data, isLoading, error, refetch: fetchData, fetch: fetchData };
 }

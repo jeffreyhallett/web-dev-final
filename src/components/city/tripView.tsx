@@ -1,11 +1,14 @@
 'use client';
 
 import { City, Activity, Trip, Accommodation, Note } from '@/types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
 import TransportationSection from '@/components/transportation/transportationSection';
+import RecommendedActivities from '@/components/activity/recommendedActivities';
+import { useRecommendations } from '@/lib/api/hooks';
+import { RecommendedActivity } from '@/lib/api/client';
 
 interface TripViewProps {
    trip: Trip;
@@ -15,6 +18,7 @@ interface TripViewProps {
    onUpdateTrip: (updates: Partial<Trip>) => void;
    onAddActivity?: () => void;
    onDeleteActivity?: (activityId: string) => Promise<void>;
+   onAddRecommendedActivity?: (activity: RecommendedActivity) => Promise<void>;
    onAddFlight?: (data: {
       departureAirport: string;
       arrivalAirport: string;
@@ -43,6 +47,7 @@ export default function TripView({
    onUpdateTrip,
    onAddActivity,
    onDeleteActivity,
+   onAddRecommendedActivity,
    onAddFlight,
    onAddTrain,
    onDeleteFlight,
@@ -51,6 +56,29 @@ export default function TripView({
    // Local state for form inputs
    const [accommodationName, setAccommodationName] = useState('');
    const [noteContent, setNoteContent] = useState('');
+
+   // Get existing activity names for recommendations context
+   const existingActivityNames = useMemo(() => {
+      return activities.filter(a => a.inTravelPlan).map(a => a.name);
+   }, [activities]);
+
+   // Recommendations hook
+   const {
+      data: recommendationsData,
+      isLoading: isLoadingRecommendations,
+      error: recommendationsError,
+      fetch: fetchRecommendations,
+   } = useRecommendations(city.name, city.country, existingActivityNames);
+
+   // Handle adding a recommended activity
+   const handleAddRecommendedActivity = useCallback(
+      async (activity: RecommendedActivity) => {
+         if (onAddRecommendedActivity) {
+            await onAddRecommendedActivity(activity);
+         }
+      },
+      [onAddRecommendedActivity]
+   );
 
    // Get accommodations for this city
    const cityAccommodation = trip.accommodation.find(a => a.city.id === city.id);
@@ -131,6 +159,20 @@ export default function TripView({
                         )}
                      </div>
                   </div>
+
+                  {/* AI Recommendations Section */}
+                  {onAddRecommendedActivity && (
+                     <div className="mt-6">
+                        <RecommendedActivities
+                           recommendations={recommendationsData?.recommendations || []}
+                           isLoading={isLoadingRecommendations}
+                           error={recommendationsError}
+                           onFetchRecommendations={fetchRecommendations}
+                           onAddToTrip={handleAddRecommendedActivity}
+                           cityName={city.name}
+                        />
+                     </div>
+                  )}
                </div>
             </div>
          </div>

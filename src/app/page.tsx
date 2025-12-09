@@ -26,6 +26,7 @@ import {
    useCreateTrain,
    useDeleteTrain,
 } from '@/lib/api';
+import { RecommendedActivity } from '@/lib/api/client';
 
 export default function HomePage() {
    const [view, setView] = useState<'list' | 'map'>('list');
@@ -289,6 +290,22 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, deleteTrain, refetchTrip]);
 
+   // Handler to add recommended activity
+   const handleAddRecommendedActivity = useCallback(async (activity: RecommendedActivity) => {
+      if (!selectedTripId || !selectedCityId) return;
+      await createActivity({
+         tripId: selectedTripId,
+         data: {
+            name: activity.name,
+            cityId: selectedCityId,
+            description: activity.description,
+            location: activity.location,
+            inTravelPlan: true,
+         },
+      });
+      await refetchTrip();
+   }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
+
    // Loading state
    if (tripsLoading) {
       return (
@@ -383,6 +400,7 @@ export default function HomePage() {
                         onUpdateTrip={handleUpdateTrip}
                         onAddActivity={handleOpenAddActivity}
                         onDeleteActivity={handleDeleteActivity}
+                        onAddRecommendedActivity={handleAddRecommendedActivity}
                         onAddFlight={handleAddFlight}
                         onAddTrain={handleAddTrain}
                         onDeleteFlight={handleDeleteFlight}

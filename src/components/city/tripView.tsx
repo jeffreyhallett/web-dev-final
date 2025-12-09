@@ -6,6 +6,7 @@ import { PlusIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
 import TransportationSection from '@/components/transportation/transportationSection';
+import AccommodationSection from '@/components/accommodation/accommodationSection';
 import RecommendationsModal from '@/components/activity/recommendationsModal';
 import { useRecommendations } from '@/lib/api/hooks';
 import { RecommendedActivity } from '@/lib/api/client';
@@ -54,7 +55,6 @@ export default function TripView({
    onDeleteTrain,
 }: TripViewProps) {
    // Local state for form inputs
-   const [accommodationName, setAccommodationName] = useState('');
    const [noteContent, setNoteContent] = useState('');
    const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
 
@@ -86,35 +86,30 @@ export default function TripView({
 
    // Initialize local state from trip data
    useEffect(() => {
-      setAccommodationName(cityAccommodation?.name || '');
       // Get notes (notes are trip-level, not city-specific)
       setNoteContent(trip.notes[0]?.content || '');
-   }, [city.id, cityAccommodation, trip.notes]);
+   }, [city.id, trip.notes]);
 
    const plannedActivities = activities.filter((a) => a.inTravelPlan === true);
 
    // Handler for updating accommodation
-   const handleAccommodationBlur = () => {
+   const handleAccommodationUpdate = (accommodation: Accommodation) => {
       const existingAccommodations = [...trip.accommodation];
       const existingIndex = existingAccommodations.findIndex(a => a.city.id === city.id);
 
-      const newAccommodation: Accommodation = {
-         id: cityAccommodation?.id || `temp-${Date.now()}`,
-         name: accommodationName,
-         address: cityAccommodation?.address || '',
-         checkIn: cityAccommodation?.checkIn || '',
-         checkOut: cityAccommodation?.checkOut || '',
-         city: city,
-         url: cityAccommodation?.url,
-      };
-
       if (existingIndex !== -1) {
-         existingAccommodations[existingIndex] = newAccommodation;
-      } else if (accommodationName) {
-         existingAccommodations.push(newAccommodation);
+         existingAccommodations[existingIndex] = accommodation;
+      } else {
+         existingAccommodations.push(accommodation);
       }
 
       onUpdateTrip({ accommodation: existingAccommodations });
+   };
+
+   // Handler for deleting accommodation
+   const handleAccommodationDelete = () => {
+      const updatedAccommodations = trip.accommodation.filter(a => a.city.id !== city.id);
+      onUpdateTrip({ accommodation: updatedAccommodations });
    };
 
    // Handler for updating notes
@@ -193,19 +188,12 @@ export default function TripView({
                <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
                   <h3 className="text-lg font-semibold mb-4">City Details</h3>
                   <div className="space-y-4">
-                     <div>
-                        <label className="block text-sm font-medium text-gray-500 mb-1">
-                           Accommodation:
-                        </label>
-                        <input
-                           type="text"
-                           value={accommodationName}
-                           onChange={(e) => setAccommodationName(e.target.value)}
-                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Enter accommodation name"
-                           onBlur={handleAccommodationBlur}
-                        />
-                     </div>
+                     <AccommodationSection
+                        accommodation={cityAccommodation}
+                        city={city}
+                        onUpdate={handleAccommodationUpdate}
+                        onDelete={cityAccommodation ? handleAccommodationDelete : undefined}
+                     />
 
                      {onAddFlight && onAddTrain && onDeleteFlight && onDeleteTrain && (
                         <TransportationSection

@@ -2,11 +2,11 @@
 
 import { City, Activity, Trip, Accommodation, Note } from '@/types';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
 import TransportationSection from '@/components/transportation/transportationSection';
-import RecommendedActivities from '@/components/activity/recommendedActivities';
+import RecommendationsModal from '@/components/activity/recommendationsModal';
 import { useRecommendations } from '@/lib/api/hooks';
 import { RecommendedActivity } from '@/lib/api/client';
 
@@ -56,6 +56,7 @@ export default function TripView({
    // Local state for form inputs
    const [accommodationName, setAccommodationName] = useState('');
    const [noteContent, setNoteContent] = useState('');
+   const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
 
    // Get existing activity names for recommendations context
    const existingActivityNames = useMemo(() => {
@@ -128,110 +129,121 @@ export default function TripView({
    };
 
    return (
-      <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full">
-         <div className="flex flex-col">
-            <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
-               <div className="space-y-6">
-                  <div>
-                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold">Planned Activities</h3>
-                        <button
-                           onClick={onAddActivity}
-                           className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                           title="Add activity"
-                        >
-                           <PlusIcon className="w-5 h-5" />
-                        </button>
+      <>
+         <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full">
+            <div className="flex flex-col">
+               <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
+                  <div className="space-y-6">
+                     <div>
+                        <div className="flex justify-between items-center mb-4">
+                           <h3 className="text-lg font-semibold">Planned Activities</h3>
+                           <button
+                              onClick={onAddActivity}
+                              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                              title="Add activity"
+                           >
+                              <PlusIcon className="w-5 h-5" />
+                           </button>
+                        </div>
+                        <div className="space-y-3">
+                           {plannedActivities.length === 0 ? (
+                              <p className="text-gray-500 text-sm">
+                                 No planned activities yet. Add some!
+                              </p>
+                           ) : (
+                              plannedActivities.map((activity) => (
+                                 <ActivityCard
+                                    key={activity.id}
+                                    activity={activity}
+                                    onDelete={onDeleteActivity}
+                                 />
+                              ))
+                           )}
+                        </div>
                      </div>
-                     <div className="space-y-3">
-                        {plannedActivities.length === 0 ? (
-                           <p className="text-gray-500 text-sm">
-                              No planned activities yet. Add some!
-                           </p>
-                        ) : (
-                           plannedActivities.map((activity) => (
-                              <ActivityCard
-                                 key={activity.id}
-                                 activity={activity}
-                                 onDelete={onDeleteActivity}
-                              />
-                           ))
-                        )}
-                     </div>
-                  </div>
 
-                  {/* AI Recommendations Section */}
-                  {onAddRecommendedActivity && (
-                     <div className="mt-6">
-                        <RecommendedActivities
-                           recommendations={recommendationsData?.recommendations || []}
-                           isLoading={isLoadingRecommendations}
-                           error={recommendationsError}
-                           onFetchRecommendations={fetchRecommendations}
-                           onAddToTrip={handleAddRecommendedActivity}
-                           cityName={city.name}
+                     {/* AI Recommendations Button */}
+                     {onAddRecommendedActivity && (
+                        <button
+                           onClick={() => setShowRecommendationsModal(true)}
+                           className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg"
+                        >
+                           <SparklesIcon className="w-5 h-5" />
+                           Get AI Suggestions
+                        </button>
+                     )}
+                  </div>
+               </div>
+            </div>
+
+            <div className="flex flex-col gap-4">
+               <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center">
+                  <h2 className="text-2xl font-bold text-gray-800">{city.name}</h2>
+                  <p className="text-sm text-gray-500">{city.country}</p>
+               </div>
+               <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1">
+                  <CityViewMap city={city} activities={activities} />
+               </div>
+            </div>
+
+            <div className="flex flex-col">
+               <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
+                  <h3 className="text-lg font-semibold mb-4">City Details</h3>
+                  <div className="space-y-4">
+                     <div>
+                        <label className="block text-sm font-medium text-gray-500 mb-1">
+                           Accommodation:
+                        </label>
+                        <input
+                           type="text"
+                           value={accommodationName}
+                           onChange={(e) => setAccommodationName(e.target.value)}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Enter accommodation name"
+                           onBlur={handleAccommodationBlur}
                         />
                      </div>
-                  )}
-               </div>
-            </div>
-         </div>
 
-         <div className="flex flex-col gap-4">
-            <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col gap-1 justify-center items-center">
-               <h2 className="text-2xl font-bold text-gray-800">{city.name}</h2>
-               <p className="text-sm text-gray-500">{city.country}</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1">
-               <CityViewMap city={city} activities={activities} />
-            </div>
-         </div>
+                     {onAddFlight && onAddTrain && onDeleteFlight && onDeleteTrain && (
+                        <TransportationSection
+                           flights={trip.transportation.flights || []}
+                           trains={trip.transportation.trainRides || []}
+                           onAddFlight={onAddFlight}
+                           onAddTrain={onAddTrain}
+                           onDeleteFlight={onDeleteFlight}
+                           onDeleteTrain={onDeleteTrain}
+                        />
+                     )}
 
-         <div className="flex flex-col">
-            <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
-               <h3 className="text-lg font-semibold mb-4">City Details</h3>
-               <div className="space-y-4">
-                  <div>
-                     <label className="block text-sm font-medium text-gray-500 mb-1">
-                        Accommodation:
-                     </label>
-                     <input
-                        type="text"
-                        value={accommodationName}
-                        onChange={(e) => setAccommodationName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter accommodation name"
-                        onBlur={handleAccommodationBlur}
-                     />
-                  </div>
-
-                  {onAddFlight && onAddTrain && onDeleteFlight && onDeleteTrain && (
-                     <TransportationSection
-                        flights={trip.transportation.flights || []}
-                        trains={trip.transportation.trainRides || []}
-                        onAddFlight={onAddFlight}
-                        onAddTrain={onAddTrain}
-                        onDeleteFlight={onDeleteFlight}
-                        onDeleteTrain={onDeleteTrain}
-                     />
-                  )}
-
-                  <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Notes:
-                     </label>
-                     <textarea
-                        value={noteContent}
-                        onChange={(e) => setNoteContent(e.target.value)}
-                        onBlur={handleNotesBlur}
-                        placeholder="Important information..."
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                     />
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                           Notes:
+                        </label>
+                        <textarea
+                           value={noteContent}
+                           onChange={(e) => setNoteContent(e.target.value)}
+                           onBlur={handleNotesBlur}
+                           placeholder="Important information..."
+                           rows={4}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        />
+                     </div>
                   </div>
                </div>
             </div>
          </div>
-      </div>
+
+         {/* Recommendations Modal */}
+         <RecommendationsModal
+            isOpen={showRecommendationsModal}
+            onClose={() => setShowRecommendationsModal(false)}
+            recommendations={recommendationsData?.recommendations || []}
+            isLoading={isLoadingRecommendations}
+            error={recommendationsError}
+            onFetchRecommendations={fetchRecommendations}
+            onAddToTrip={handleAddRecommendedActivity}
+            cityName={city.name}
+         />
+      </>
    );
 }

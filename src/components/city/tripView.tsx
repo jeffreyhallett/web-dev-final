@@ -1,7 +1,7 @@
 'use client';
 
 import { City, Activity, Trip, Accommodation, Note } from '@/types';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { PlusIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import CityViewMap from '@/components/map/cityViewMap';
 import ActivityCard from '@/components/ui/activityCard';
@@ -88,9 +88,20 @@ export default function TripView({
    onDeleteFlight,
    onDeleteTrain,
 }: TripViewProps) {
-   // Local state for form inputs
-   const [noteContent, setNoteContent] = useState('');
+   // Track note content from props for synchronization
+   const noteFromProps = trip.notes[0]?.content || '';
+
+   // Local state for form inputs - use React's recommended pattern for derived state
+   const [prevNoteFromProps, setPrevNoteFromProps] = useState(noteFromProps);
+   const [noteContent, setNoteContent] = useState(noteFromProps);
    const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
+
+   // Sync when props change - React recommends this pattern over useEffect for derived state
+   // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+   if (noteFromProps !== prevNoteFromProps) {
+      setPrevNoteFromProps(noteFromProps);
+      setNoteContent(noteFromProps);
+   }
 
    // Get existing activity names for recommendations context
    const existingActivityNames = useMemo(() => {
@@ -117,12 +128,6 @@ export default function TripView({
 
    // Get accommodations for this city
    const cityAccommodation = trip.accommodation.find(a => a.city.id === city.id);
-
-   // Initialize local state from trip data
-   useEffect(() => {
-      // Get notes (notes are trip-level, not city-specific)
-      setNoteContent(trip.notes[0]?.content || '');
-   }, [city.id, trip.notes]);
 
    const plannedActivities = activities.filter((a) => a.inTravelPlan === true);
 

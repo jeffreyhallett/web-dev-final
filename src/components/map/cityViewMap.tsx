@@ -2,7 +2,7 @@
 
 import { City, Activity, Accommodation } from '@/types';
 import { useGoogleMaps } from '@/lib/hooks/googleMapsHook';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface CityDetailMapProps {
    city: City;
@@ -31,100 +31,116 @@ export default function CityViewMap({ city, activities = [], accommodations = []
    const [accommodationLocations, setAccommodationLocations] = useState<AccommodationLocation[]>([]);
    const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
-   // Geocode activity locations
-   const geocodeActivities = useCallback(async () => {
-      if (!isLoaded || !activities.length) {
-         setActivityLocations([]);
-         return;
-      }
-
-      if (!geocoderRef.current) {
-         geocoderRef.current = new google.maps.Geocoder();
-      }
-
-      const activitiesWithLocation = activities.filter(a => a.location && a.location.trim());
-
-      const locationPromises = activitiesWithLocation.map(async (activity) => {
-         try {
-            const result = await geocoderRef.current!.geocode({
-               address: `${activity.location}, ${city.name}, ${city.country}`,
-               bounds: {
-                  north: city.latitude + 0.1,
-                  south: city.latitude - 0.1,
-                  east: city.longitude + 0.1,
-                  west: city.longitude - 0.1,
-               },
-            });
-
-            if (result.results.length > 0) {
-               const location = result.results[0].geometry.location;
-               return {
-                  activity,
-                  position: { lat: location.lat(), lng: location.lng() },
-               };
-            }
-         } catch (err) {
-            console.warn(`Failed to geocode location for ${activity.name}:`, err);
-         }
-         return null;
-      });
-
-      const results = await Promise.all(locationPromises);
-      setActivityLocations(results.filter((r): r is ActivityLocation => r !== null));
-   }, [isLoaded, activities, city.name, city.country, city.latitude, city.longitude]);
-
-   // Geocode accommodation locations
-   const geocodeAccommodations = useCallback(async () => {
-      if (!isLoaded || !accommodations.length) {
-         setAccommodationLocations([]);
-         return;
-      }
-
-      if (!geocoderRef.current) {
-         geocoderRef.current = new google.maps.Geocoder();
-      }
-
-      // Only geocode accommodations that have addresses
-      const accommodationsWithAddress = accommodations.filter(a => a.address && a.address.trim());
-
-      const locationPromises = accommodationsWithAddress.map(async (accommodation) => {
-         try {
-            const result = await geocoderRef.current!.geocode({
-               address: `${accommodation.address}, ${city.name}, ${city.country}`,
-               bounds: {
-                  north: city.latitude + 0.1,
-                  south: city.latitude - 0.1,
-                  east: city.longitude + 0.1,
-                  west: city.longitude - 0.1,
-               },
-            });
-
-            if (result.results.length > 0) {
-               const location = result.results[0].geometry.location;
-               return {
-                  accommodation,
-                  position: { lat: location.lat(), lng: location.lng() },
-               };
-            }
-         } catch (err) {
-            console.warn(`Failed to geocode address for ${accommodation.name}:`, err);
-         }
-         return null;
-      });
-
-      const results = await Promise.all(locationPromises);
-      setAccommodationLocations(results.filter((r): r is AccommodationLocation => r !== null));
-   }, [isLoaded, accommodations, city.name, city.country, city.latitude, city.longitude]);
-
    // Geocode when activities or city changes
    useEffect(() => {
+      // Skip geocoding if not loaded or no activities
+      if (!isLoaded || !activities.length) {
+         return;
+      }
+
+      let cancelled = false;
+
+      // Start async geocoding work
+      const geocodeActivities = async () => {
+         if (!geocoderRef.current) {
+            geocoderRef.current = new google.maps.Geocoder();
+         }
+
+         const activitiesWithLocation = activities.filter(a => a.location && a.location.trim());
+
+         const locationPromises = activitiesWithLocation.map(async (activity) => {
+            try {
+               const result = await geocoderRef.current!.geocode({
+                  address: `${activity.location}, ${city.name}, ${city.country}`,
+                  bounds: {
+                     north: city.latitude + 0.1,
+                     south: city.latitude - 0.1,
+                     east: city.longitude + 0.1,
+                     west: city.longitude - 0.1,
+                  },
+               });
+
+               if (result.results.length > 0) {
+                  const location = result.results[0].geometry.location;
+                  return {
+                     activity,
+                     position: { lat: location.lat(), lng: location.lng() },
+                  };
+               }
+            } catch (err) {
+               console.warn(`Failed to geocode location for ${activity.name}:`, err);
+            }
+            return null;
+         });
+
+         const results = await Promise.all(locationPromises);
+         if (!cancelled) {
+            setActivityLocations(results.filter((r): r is ActivityLocation => r !== null));
+         }
+      };
+
       geocodeActivities();
-   }, [geocodeActivities]);
+
+      return () => {
+         cancelled = true;
+      };
+   }, [isLoaded, activities, city.name, city.country, city.latitude, city.longitude]);
 
    // Geocode when accommodations or city changes
    useEffect(() => {
+      // Skip geocoding if not loaded or no accommodations
+      if (!isLoaded || !accommodations.length) {
+         return;
+      }
+
+      let cancelled = false;
+
+      // Start async geocoding work
+      const geocodeAccommodations = async () => {
+         if (!geocoderRef.current) {
+            geocoderRef.current = new google.maps.Geocoder();
+         }
+
+         // Only geocode accommodations that have addresses
+         const accommodationsWithAddress = accommodations.filter(a => a.address && a.address.trim());
+
+         const locationPromises = accommodationsWithAddress.map(async (accommodation) => {
+            try {
+               const result = await geocoderRef.current!.geocode({
+                  address: `${accommodation.address}, ${city.name}, ${city.country}`,
+                  bounds: {
+                     north: city.latitude + 0.1,
+                     south: city.latitude - 0.1,
+                     east: city.longitude + 0.1,
+                     west: city.longitude - 0.1,
+                  },
+               });
+
+               if (result.results.length > 0) {
+                  const location = result.results[0].geometry.location;
+                  return {
+                     accommodation,
+                     position: { lat: location.lat(), lng: location.lng() },
+                  };
+               }
+            } catch (err) {
+               console.warn(`Failed to geocode address for ${accommodation.name}:`, err);
+            }
+            return null;
+         });
+
+         const results = await Promise.all(locationPromises);
+         if (!cancelled) {
+            setAccommodationLocations(results.filter((r): r is AccommodationLocation => r !== null));
+         }
+      };
+
       geocodeAccommodations();
-   }, [geocodeAccommodations]);
+
+      return () => {
+         cancelled = true;
+      };
+   }, [isLoaded, accommodations, city.name, city.country, city.latitude, city.longitude]);
 
    // Create map once
    useEffect(() => {

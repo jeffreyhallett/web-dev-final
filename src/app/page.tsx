@@ -22,8 +22,10 @@ import {
    useCreateActivity,
    useDeleteActivity,
    useCreateFlight,
+   useUpdateFlight,
    useDeleteFlight,
    useCreateTrain,
+   useUpdateTrain,
    useDeleteTrain,
 } from '@/lib/api';
 import { RecommendedActivity } from '@/lib/api/client';
@@ -54,8 +56,10 @@ export default function HomePage() {
    const { mutate: createActivity } = useCreateActivity();
    const { mutate: deleteActivity } = useDeleteActivity();
    const { mutate: createFlight } = useCreateFlight();
+   const { mutate: updateFlight } = useUpdateFlight();
    const { mutate: deleteFlight } = useDeleteFlight();
    const { mutate: createTrain } = useCreateTrain();
+   const { mutate: updateTrain } = useUpdateTrain();
    const { mutate: deleteTrain } = useDeleteTrain();
 
    // Derived values
@@ -247,6 +251,9 @@ export default function HomePage() {
       airline?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
    }) => {
       if (!selectedTripId) return;
       await createFlight({
@@ -255,6 +262,27 @@ export default function HomePage() {
       });
       await refetchTrip();
    }, [selectedTripId, createFlight, refetchTrip]);
+
+   // Handler to update flight
+   const handleUpdateFlight = useCallback(async (flightId: string, data: {
+      departureAirport?: string;
+      arrivalAirport?: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await updateFlight({
+         tripId: selectedTripId,
+         flightId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, updateFlight, refetchTrip]);
 
    // Handler to delete flight
    const handleDeleteFlight = useCallback(async (flightId: string) => {
@@ -274,6 +302,10 @@ export default function HomePage() {
       operator?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
    }) => {
       if (!selectedTripId) return;
       await createTrain({
@@ -282,6 +314,28 @@ export default function HomePage() {
       });
       await refetchTrip();
    }, [selectedTripId, createTrain, refetchTrip]);
+
+   // Handler to update train
+   const handleUpdateTrain = useCallback(async (trainId: string, data: {
+      departureStation?: string;
+      arrivalStation?: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await updateTrain({
+         tripId: selectedTripId,
+         trainId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, updateTrain, refetchTrip]);
 
    // Handler to delete train
    const handleDeleteTrain = useCallback(async (trainId: string) => {
@@ -406,6 +460,8 @@ export default function HomePage() {
                         onAddRecommendedActivity={handleAddRecommendedActivity}
                         onAddFlight={handleAddFlight}
                         onAddTrain={handleAddTrain}
+                        onUpdateFlight={handleUpdateFlight}
+                        onUpdateTrain={handleUpdateTrain}
                         onDeleteFlight={handleDeleteFlight}
                         onDeleteTrain={handleDeleteTrain}
                      />

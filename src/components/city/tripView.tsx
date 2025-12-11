@@ -27,6 +27,9 @@ interface TripViewProps {
       airline?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
    }) => Promise<void>;
    onAddTrain?: (data: {
       departureStation: string;
@@ -35,6 +38,33 @@ interface TripViewProps {
       operator?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
+   }) => Promise<void>;
+   onUpdateFlight?: (flightId: string, data: {
+      departureAirport?: string;
+      arrivalAirport?: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
+   }) => Promise<void>;
+   onUpdateTrain?: (trainId: string, data: {
+      departureStation?: string;
+      arrivalStation?: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
    }) => Promise<void>;
    onDeleteFlight?: (flightId: string) => Promise<void>;
    onDeleteTrain?: (trainId: string) => Promise<void>;
@@ -51,6 +81,8 @@ export default function TripView({
    onAddRecommendedActivity,
    onAddFlight,
    onAddTrain,
+   onUpdateFlight,
+   onUpdateTrain,
    onDeleteFlight,
    onDeleteTrain,
 }: TripViewProps) {
@@ -201,6 +233,8 @@ export default function TripView({
                            trains={trip.transportation.trainRides || []}
                            onAddFlight={onAddFlight}
                            onAddTrain={onAddTrain}
+                           onUpdateFlight={onUpdateFlight}
+                           onUpdateTrain={onUpdateTrain}
                            onDeleteFlight={onDeleteFlight}
                            onDeleteTrain={onDeleteTrain}
                         />

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Accommodation, City } from '@/types';
-import { PlusIcon, TrashIcon, HomeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, HomeIcon, ChevronDownIcon, ChevronRightIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 interface AccommodationSectionProps {
    accommodation?: Accommodation;
@@ -189,57 +189,69 @@ export default function AccommodationSection({
                   <div className="bg-gray-50 rounded-lg overflow-hidden">
                      <div
                         className="p-2 flex items-start justify-between group cursor-pointer"
-                        onClick={() => hasExpandableDetails && setIsExpanded(!isExpanded)}
+                        onClick={() => setIsExpanded(!isExpanded)}
                      >
                         <div className="flex-1 min-w-0">
                            <div className="flex items-center gap-2">
+                              {isExpanded ? (
+                                 <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              ) : (
+                                 <ChevronRightIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              )}
                               <HomeIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
                               <span className="font-medium text-sm truncate">
                                  {accommodation.name}
                               </span>
-                              {hasExpandableDetails && (
-                                 isExpanded ? (
-                                    <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                 ) : (
-                                    <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                 )
-                              )}
                            </div>
                            {accommodation.address && (
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6 truncate">
+                              <div className="text-xs text-gray-500 mt-0.5 ml-10 truncate">
                                  {accommodation.address}
                               </div>
                            )}
                            {(accommodation.checkIn || accommodation.checkOut) && (
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                              <div className="text-xs text-gray-500 mt-0.5 ml-10">
                                  {formatDate(accommodation.checkIn)}
                                  {accommodation.checkIn && accommodation.checkOut && ' → '}
                                  {formatDate(accommodation.checkOut)}
                               </div>
                            )}
                         </div>
-                        {onDelete && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                            <button
                               onClick={(e) => {
                                  e.stopPropagation();
-                                 onDelete();
+                                 setShowAddForm(true);
                               }}
-                              className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                              title="Delete accommodation"
+                              className="p-1 text-gray-400 hover:text-blue-500"
+                              title="Edit accommodation"
                            >
-                              <TrashIcon className="w-4 h-4" />
+                              <PencilIcon className="w-4 h-4" />
                            </button>
-                        )}
+                           {onDelete && (
+                              <button
+                                 onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete();
+                                 }}
+                                 className="p-1 text-gray-400 hover:text-red-500"
+                                 title="Delete accommodation"
+                              >
+                                 <TrashIcon className="w-4 h-4" />
+                              </button>
+                           )}
+                        </div>
                      </div>
 
                      {/* Expanded Details */}
-                     {isExpanded && hasExpandableDetails && (
-                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
-                           {accommodation.confirmationNumber && (
+                     {isExpanded && (
+                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
+                           {accommodation.confirmationNumber ? (
                               <div className="flex items-center gap-2 text-xs">
                                  <span className="text-gray-500 font-medium">Confirmation:</span>
                                  <span className="text-gray-700 font-mono">{accommodation.confirmationNumber}</span>
                               </div>
+                           ) : (
+                              <div className="text-xs text-gray-400 italic">No confirmation number</div>
                            )}
                            {accommodation.url && (
                               <div className="flex items-center gap-2 text-xs">

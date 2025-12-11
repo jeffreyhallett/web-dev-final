@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Flight, Train } from '@/types';
-import { PlusIcon, TrashIcon, PaperAirplaneIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PaperAirplaneIcon, ChevronDownIcon, ChevronRightIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 interface TransportationSectionProps {
    flights: Flight[];
@@ -14,6 +14,9 @@ interface TransportationSectionProps {
       airline?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
    }) => Promise<void>;
    onAddTrain: (data: {
       departureStation: string;
@@ -22,6 +25,33 @@ interface TransportationSectionProps {
       operator?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
+   }) => Promise<void>;
+   onUpdateFlight?: (flightId: string, data: {
+      departureAirport?: string;
+      arrivalAirport?: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
+   }) => Promise<void>;
+   onUpdateTrain?: (trainId: string, data: {
+      departureStation?: string;
+      arrivalStation?: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
    }) => Promise<void>;
    onDeleteFlight: (flightId: string) => Promise<void>;
    onDeleteTrain: (trainId: string) => Promise<void>;
@@ -34,6 +64,8 @@ export default function TransportationSection({
    trains,
    onAddFlight,
    onAddTrain,
+   onUpdateFlight,
+   onUpdateTrain,
    onDeleteFlight,
    onDeleteTrain,
 }: TransportationSectionProps) {
@@ -42,6 +74,8 @@ export default function TransportationSection({
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [expandedFlightId, setExpandedFlightId] = useState<string | null>(null);
    const [expandedTrainId, setExpandedTrainId] = useState<string | null>(null);
+   const [editingFlightId, setEditingFlightId] = useState<string | null>(null);
+   const [editingTrainId, setEditingTrainId] = useState<string | null>(null);
 
    // Flight form state
    const [flightDeparture, setFlightDeparture] = useState('');
@@ -50,6 +84,9 @@ export default function TransportationSection({
    const [airline, setAirline] = useState('');
    const [flightDepartureTime, setFlightDepartureTime] = useState('');
    const [flightArrivalTime, setFlightArrivalTime] = useState('');
+   const [flightConfirmation, setFlightConfirmation] = useState('');
+   const [flightBookingUrl, setFlightBookingUrl] = useState('');
+   const [flightNotes, setFlightNotes] = useState('');
 
    // Train form state
    const [trainDeparture, setTrainDeparture] = useState('');
@@ -58,6 +95,10 @@ export default function TransportationSection({
    const [operator, setOperator] = useState('');
    const [trainDepartureTime, setTrainDepartureTime] = useState('');
    const [trainArrivalTime, setTrainArrivalTime] = useState('');
+   const [trainConfirmation, setTrainConfirmation] = useState('');
+   const [trainBookingUrl, setTrainBookingUrl] = useState('');
+   const [trainSeatInfo, setTrainSeatInfo] = useState('');
+   const [trainNotes, setTrainNotes] = useState('');
 
    const resetFlightForm = () => {
       setFlightDeparture('');
@@ -66,6 +107,10 @@ export default function TransportationSection({
       setAirline('');
       setFlightDepartureTime('');
       setFlightArrivalTime('');
+      setFlightConfirmation('');
+      setFlightBookingUrl('');
+      setFlightNotes('');
+      setEditingFlightId(null);
    };
 
    const resetTrainForm = () => {
@@ -75,49 +120,102 @@ export default function TransportationSection({
       setOperator('');
       setTrainDepartureTime('');
       setTrainArrivalTime('');
+      setTrainConfirmation('');
+      setTrainBookingUrl('');
+      setTrainSeatInfo('');
+      setTrainNotes('');
+      setEditingTrainId(null);
    };
 
-   const handleAddFlight = async (e: React.FormEvent) => {
+   const loadFlightForEdit = (flight: Flight) => {
+      setFlightDeparture(flight.departureAirport);
+      setFlightArrival(flight.arrivalAirport);
+      setFlightNumber(flight.number || '');
+      setAirline(flight.airline || '');
+      setFlightDepartureTime(flight.times.departure || '');
+      setFlightArrivalTime(flight.times.arrival || '');
+      setFlightConfirmation(flight.confirmationNumber || '');
+      setFlightBookingUrl(flight.bookingUrl || '');
+      setFlightNotes(flight.notes || '');
+      setEditingFlightId(flight.id);
+      setShowAddForm(true);
+   };
+
+   const loadTrainForEdit = (train: Train) => {
+      setTrainDeparture(train.departureStation);
+      setTrainArrival(train.arrivalStation);
+      setTrainNumber(train.number || '');
+      setOperator(train.operator || '');
+      setTrainDepartureTime(train.times.departure || '');
+      setTrainArrivalTime(train.times.arrival || '');
+      setTrainConfirmation(train.confirmationNumber || '');
+      setTrainBookingUrl(train.bookingUrl || '');
+      setTrainSeatInfo(train.seatInfo || '');
+      setTrainNotes(train.notes || '');
+      setEditingTrainId(train.id);
+      setShowAddForm(true);
+   };
+
+   const handleAddOrUpdateFlight = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!flightDeparture.trim() || !flightArrival.trim()) return;
 
       setIsSubmitting(true);
       try {
-         await onAddFlight({
+         const data = {
             departureAirport: flightDeparture.trim(),
             arrivalAirport: flightArrival.trim(),
             flightNumber: flightNumber.trim() || undefined,
             airline: airline.trim() || undefined,
             departureTime: flightDepartureTime || undefined,
             arrivalTime: flightArrivalTime || undefined,
-         });
+            confirmationNumber: flightConfirmation.trim() || undefined,
+            bookingUrl: flightBookingUrl.trim() || undefined,
+            notes: flightNotes.trim() || undefined,
+         };
+
+         if (editingFlightId && onUpdateFlight) {
+            await onUpdateFlight(editingFlightId, data);
+         } else {
+            await onAddFlight(data);
+         }
          resetFlightForm();
          setShowAddForm(false);
       } catch (err) {
-         console.error('Failed to add flight:', err);
+         console.error('Failed to save flight:', err);
       } finally {
          setIsSubmitting(false);
       }
    };
 
-   const handleAddTrain = async (e: React.FormEvent) => {
+   const handleAddOrUpdateTrain = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!trainDeparture.trim() || !trainArrival.trim()) return;
 
       setIsSubmitting(true);
       try {
-         await onAddTrain({
+         const data = {
             departureStation: trainDeparture.trim(),
             arrivalStation: trainArrival.trim(),
             trainNumber: trainNumber.trim() || undefined,
             operator: operator.trim() || undefined,
             departureTime: trainDepartureTime || undefined,
             arrivalTime: trainArrivalTime || undefined,
-         });
+            confirmationNumber: trainConfirmation.trim() || undefined,
+            bookingUrl: trainBookingUrl.trim() || undefined,
+            seatInfo: trainSeatInfo.trim() || undefined,
+            notes: trainNotes.trim() || undefined,
+         };
+
+         if (editingTrainId && onUpdateTrain) {
+            await onUpdateTrain(editingTrainId, data);
+         } else {
+            await onAddTrain(data);
+         }
          resetTrainForm();
          setShowAddForm(false);
       } catch (err) {
-         console.error('Failed to add train:', err);
+         console.error('Failed to save train:', err);
       } finally {
          setIsSubmitting(false);
       }
@@ -154,6 +252,15 @@ export default function TransportationSection({
       return train.confirmationNumber || train.bookingUrl || train.seatInfo || train.notes;
    };
 
+   const handleCancelForm = () => {
+      if (activeTab === 'flights') {
+         resetFlightForm();
+      } else {
+         resetTrainForm();
+      }
+      setShowAddForm(false);
+   };
+
    return (
       <div className="space-y-3">
          <div className="flex items-center justify-between">
@@ -161,7 +268,13 @@ export default function TransportationSection({
                Transportation
             </label>
             <button
-               onClick={() => setShowAddForm(!showAddForm)}
+               onClick={() => {
+                  if (showAddForm) {
+                     handleCancelForm();
+                  } else {
+                     setShowAddForm(true);
+                  }
+               }}
                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                title={showAddForm ? 'Cancel' : 'Add transportation'}
             >
@@ -193,11 +306,11 @@ export default function TransportationSection({
             </button>
          </div>
 
-         {/* Add Form */}
+         {/* Add/Edit Form */}
          {showAddForm && (
             <div className="bg-gray-50 rounded-lg p-3">
                {activeTab === 'flights' ? (
-                  <form onSubmit={handleAddFlight} className="space-y-2">
+                  <form onSubmit={handleAddOrUpdateFlight} className="space-y-2">
                      <div className="grid grid-cols-2 gap-2">
                         <input
                            type="text"
@@ -252,16 +365,37 @@ export default function TransportationSection({
                            />
                         </div>
                      </div>
+                     <input
+                        type="text"
+                        value={flightConfirmation}
+                        onChange={(e) => setFlightConfirmation(e.target.value)}
+                        placeholder="Confirmation number"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                     />
+                     <input
+                        type="url"
+                        value={flightBookingUrl}
+                        onChange={(e) => setFlightBookingUrl(e.target.value)}
+                        placeholder="Booking URL"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                     />
+                     <textarea
+                        value={flightNotes}
+                        onChange={(e) => setFlightNotes(e.target.value)}
+                        placeholder="Notes"
+                        rows={2}
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
+                     />
                      <button
                         type="submit"
                         disabled={isSubmitting}
                         className="w-full px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
                      >
-                        {isSubmitting ? 'Adding...' : 'Add Flight'}
+                        {isSubmitting ? 'Saving...' : editingFlightId ? 'Update Flight' : 'Add Flight'}
                      </button>
                   </form>
                ) : (
-                  <form onSubmit={handleAddTrain} className="space-y-2">
+                  <form onSubmit={handleAddOrUpdateTrain} className="space-y-2">
                      <div className="grid grid-cols-2 gap-2">
                         <input
                            type="text"
@@ -316,12 +450,40 @@ export default function TransportationSection({
                            />
                         </div>
                      </div>
+                     <input
+                        type="text"
+                        value={trainConfirmation}
+                        onChange={(e) => setTrainConfirmation(e.target.value)}
+                        placeholder="Confirmation number"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                     />
+                     <input
+                        type="text"
+                        value={trainSeatInfo}
+                        onChange={(e) => setTrainSeatInfo(e.target.value)}
+                        placeholder="Seat info (e.g., Car 5, Seat 23)"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                     />
+                     <input
+                        type="url"
+                        value={trainBookingUrl}
+                        onChange={(e) => setTrainBookingUrl(e.target.value)}
+                        placeholder="Booking URL"
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                     />
+                     <textarea
+                        value={trainNotes}
+                        onChange={(e) => setTrainNotes(e.target.value)}
+                        placeholder="Notes"
+                        rows={2}
+                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
+                     />
                      <button
                         type="submit"
                         disabled={isSubmitting}
                         className="w-full px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
                      >
-                        {isSubmitting ? 'Adding...' : 'Add Train'}
+                        {isSubmitting ? 'Saving...' : editingTrainId ? 'Update Train' : 'Add Train'}
                      </button>
                   </form>
                )}
@@ -343,55 +505,69 @@ export default function TransportationSection({
                      >
                         <div
                            className="p-2 flex items-start justify-between group cursor-pointer"
-                           onClick={() => hasFlightDetails(flight) && toggleFlightExpanded(flight.id)}
+                           onClick={() => toggleFlightExpanded(flight.id)}
                         >
                            <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
+                                 {expandedFlightId === flight.id ? (
+                                    <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 ) : (
+                                    <ChevronRightIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 )}
                                  <PaperAirplaneIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
                                  <span className="font-medium text-sm truncate">
                                     {flight.departureAirport} → {flight.arrivalAirport}
                                  </span>
-                                 {hasFlightDetails(flight) && (
-                                    expandedFlightId === flight.id ? (
-                                       <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                    ) : (
-                                       <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                    )
-                                 )}
                               </div>
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                              <div className="text-xs text-gray-500 mt-0.5 ml-10">
                                  {flight.airline && <span>{flight.airline}</span>}
                                  {flight.airline && flight.number && <span> · </span>}
                                  {flight.number && <span>{flight.number}</span>}
                               </div>
                               {(flight.times.departure || flight.times.arrival) && (
-                                 <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                                 <div className="text-xs text-gray-500 mt-0.5 ml-10">
                                     {formatTime(flight.times.departure)}
                                     {flight.times.departure && flight.times.arrival && ' → '}
                                     {formatTime(flight.times.arrival)}
                                  </div>
                               )}
                            </div>
-                           <button
-                              onClick={(e) => {
-                                 e.stopPropagation();
-                                 onDeleteFlight(flight.id);
-                              }}
-                              className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                              title="Delete flight"
-                           >
-                              <TrashIcon className="w-4 h-4" />
-                           </button>
+                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                              {onUpdateFlight && (
+                                 <button
+                                    onClick={(e) => {
+                                       e.stopPropagation();
+                                       loadFlightForEdit(flight);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-blue-500"
+                                    title="Edit flight"
+                                 >
+                                    <PencilIcon className="w-4 h-4" />
+                                 </button>
+                              )}
+                              <button
+                                 onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteFlight(flight.id);
+                                 }}
+                                 className="p-1 text-gray-400 hover:text-red-500"
+                                 title="Delete flight"
+                              >
+                                 <TrashIcon className="w-4 h-4" />
+                              </button>
+                           </div>
                         </div>
 
                         {/* Expanded Details */}
-                        {expandedFlightId === flight.id && hasFlightDetails(flight) && (
-                           <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
-                              {flight.confirmationNumber && (
+                        {expandedFlightId === flight.id && (
+                           <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
+                              {flight.confirmationNumber ? (
                                  <div className="flex items-center gap-2 text-xs">
                                     <span className="text-gray-500 font-medium">Confirmation:</span>
                                     <span className="text-gray-700 font-mono">{flight.confirmationNumber}</span>
                                  </div>
+                              ) : (
+                                 <div className="text-xs text-gray-400 italic">No confirmation number</div>
                               )}
                               {flight.bookingUrl && (
                                  <div className="flex items-center gap-2 text-xs">
@@ -430,57 +606,71 @@ export default function TransportationSection({
                   >
                      <div
                         className="p-2 flex items-start justify-between group cursor-pointer"
-                        onClick={() => hasTrainDetails(train) && toggleTrainExpanded(train.id)}
+                        onClick={() => toggleTrainExpanded(train.id)}
                      >
                         <div className="flex-1 min-w-0">
                            <div className="flex items-center gap-2">
+                              {expandedTrainId === train.id ? (
+                                 <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              ) : (
+                                 <ChevronRightIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                              )}
                               <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 14l-3-3m3 3l3-3M5 12H3m18 0h-2M7 8H5m14 0h-2" />
                               </svg>
                               <span className="font-medium text-sm truncate">
                                  {train.departureStation} → {train.arrivalStation}
                               </span>
-                              {hasTrainDetails(train) && (
-                                 expandedTrainId === train.id ? (
-                                    <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                 ) : (
-                                    <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                                 )
-                              )}
                            </div>
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                           <div className="text-xs text-gray-500 mt-0.5 ml-10">
                               {train.operator && <span>{train.operator}</span>}
                               {train.operator && train.number && <span> · </span>}
                               {train.number && <span>{train.number}</span>}
                            </div>
                            {(train.times.departure || train.times.arrival) && (
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                              <div className="text-xs text-gray-500 mt-0.5 ml-10">
                                  {formatTime(train.times.departure)}
                                  {train.times.departure && train.times.arrival && ' → '}
                                  {formatTime(train.times.arrival)}
                               </div>
                            )}
                         </div>
-                        <button
-                           onClick={(e) => {
-                              e.stopPropagation();
-                              onDeleteTrain(train.id);
-                           }}
-                           className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                           title="Delete train"
-                        >
-                           <TrashIcon className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                           {onUpdateTrain && (
+                              <button
+                                 onClick={(e) => {
+                                    e.stopPropagation();
+                                    loadTrainForEdit(train);
+                                 }}
+                                 className="p-1 text-gray-400 hover:text-blue-500"
+                                 title="Edit train"
+                              >
+                                 <PencilIcon className="w-4 h-4" />
+                              </button>
+                           )}
+                           <button
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 onDeleteTrain(train.id);
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-500"
+                              title="Delete train"
+                           >
+                              <TrashIcon className="w-4 h-4" />
+                           </button>
+                        </div>
                      </div>
 
                      {/* Expanded Details */}
-                     {expandedTrainId === train.id && hasTrainDetails(train) && (
-                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
-                           {train.confirmationNumber && (
+                     {expandedTrainId === train.id && (
+                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
+                           {train.confirmationNumber ? (
                               <div className="flex items-center gap-2 text-xs">
                                  <span className="text-gray-500 font-medium">Confirmation:</span>
                                  <span className="text-gray-700 font-mono">{train.confirmationNumber}</span>
                               </div>
+                           ) : (
+                              <div className="text-xs text-gray-400 italic">No confirmation number</div>
                            )}
                            {train.seatInfo && (
                               <div className="flex items-center gap-2 text-xs">

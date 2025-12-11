@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/modal';
+import { Activity } from '@/types';
 
 interface AddActivityModalProps {
    isOpen: boolean;
@@ -16,9 +17,10 @@ interface AddActivityModalProps {
       imageUrl?: string;
    }) => Promise<void>;
    cityName: string;
+   initialActivity?: Activity;
 }
 
-export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName }: AddActivityModalProps) {
+export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName, initialActivity }: AddActivityModalProps) {
    const [name, setName] = useState('');
    const [description, setDescription] = useState('');
    const [location, setLocation] = useState('');
@@ -28,6 +30,33 @@ export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName }
    const [imageUrl, setImageUrl] = useState('');
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [error, setError] = useState<string | null>(null);
+
+   const isEditing = !!initialActivity;
+
+   // Populate form when initialActivity changes
+   useEffect(() => {
+      if (initialActivity) {
+         setName(initialActivity.name || '');
+         setDescription(initialActivity.description || '');
+         setLocation(initialActivity.location || '');
+         setScheduledTime(initialActivity.time || '');
+         setInTravelPlan(initialActivity.inTravelPlan ?? true);
+         setActivityUrl(initialActivity.url || '');
+         setImageUrl(initialActivity.imageUrl || '');
+      } else {
+         resetForm();
+      }
+   }, [initialActivity]);
+
+   const resetForm = () => {
+      setName('');
+      setDescription('');
+      setLocation('');
+      setScheduledTime('');
+      setInTravelPlan(true);
+      setActivityUrl('');
+      setImageUrl('');
+   };
 
    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -49,36 +78,28 @@ export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName }
             activityUrl: activityUrl.trim() || undefined,
             imageUrl: imageUrl.trim() || undefined,
          });
-         // Reset form
-         setName('');
-         setDescription('');
-         setLocation('');
-         setScheduledTime('');
-         setInTravelPlan(true);
-         setActivityUrl('');
-         setImageUrl('');
+         resetForm();
          onClose();
       } catch (err) {
-         setError(err instanceof Error ? err.message : 'Failed to add activity');
+         setError(err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'add'} activity`);
       } finally {
          setIsSubmitting(false);
       }
    };
 
    const handleClose = () => {
-      setName('');
-      setDescription('');
-      setLocation('');
-      setScheduledTime('');
-      setInTravelPlan(true);
-      setActivityUrl('');
-      setImageUrl('');
+      resetForm();
       setError(null);
       onClose();
    };
 
+   const title = isEditing ? `Edit Activity in ${cityName}` : `Add Activity in ${cityName}`;
+   const submitText = isEditing
+      ? (isSubmitting ? 'Updating...' : 'Update Activity')
+      : (isSubmitting ? 'Adding...' : 'Add Activity');
+
    return (
-      <Modal isOpen={isOpen} onClose={handleClose} title={`Add Activity in ${cityName}`} size="lg">
+      <Modal isOpen={isOpen} onClose={handleClose} title={title} size="lg">
          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
                <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">
@@ -193,7 +214,7 @@ export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName }
                   disabled={isSubmitting}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                >
-                  {isSubmitting ? 'Adding...' : 'Add Activity'}
+                  {submitText}
                </button>
             </div>
          </form>

@@ -18,6 +18,7 @@ interface TripViewProps {
    onUpdateActivities: (activities: Activity[]) => void;
    onUpdateTrip: (updates: Partial<Trip>) => void;
    onAddActivity?: () => void;
+   onEditActivity?: (activity: Activity) => void;
    onDeleteActivity?: (activityId: string) => Promise<void>;
    onAddRecommendedActivity?: (activity: RecommendedActivity) => Promise<void>;
    onAddFlight?: (data: {
@@ -77,6 +78,7 @@ export default function TripView({
    onUpdateActivities,
    onUpdateTrip,
    onAddActivity,
+   onEditActivity,
    onDeleteActivity,
    onAddRecommendedActivity,
    onAddFlight,
@@ -184,6 +186,7 @@ export default function TripView({
                               <ActivityCard
                                  key={activity.id}
                                  activity={activity}
+                                 onEdit={onEditActivity}
                                  onDelete={onDeleteActivity}
                               />
                            ))

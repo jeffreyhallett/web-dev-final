@@ -1,7 +1,7 @@
 'use client';
 
 import TripList from '@/components/trip/tripList';
-import { Trip, Activity } from '@/types';
+import type { Trip, Activity } from '@/types';
 import { useState, useCallback } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
@@ -20,6 +20,7 @@ import {
    useUpdateNote,
    useCreateNote,
    useCreateActivity,
+   useUpdateActivity,
    useDeleteActivity,
    useCreateFlight,
    useUpdateFlight,
@@ -38,6 +39,7 @@ export default function HomePage() {
    const [showAddTripModal, setShowAddTripModal] = useState(false);
    const [showAddCityModal, setShowAddCityModal] = useState(false);
    const [showAddActivityModal, setShowAddActivityModal] = useState(false);
+   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
    // Fetch trips from API
    const { data: trips, isLoading: tripsLoading, error: tripsError, refetch: refetchTrips } = useTrips();
@@ -54,6 +56,7 @@ export default function HomePage() {
    const { mutate: createNote } = useCreateNote();
    const { mutate: updateNote } = useUpdateNote();
    const { mutate: createActivity } = useCreateActivity();
+   const { mutate: updateActivity } = useUpdateActivity();
    const { mutate: deleteActivity } = useDeleteActivity();
    const { mutate: createFlight } = useCreateFlight();
    const { mutate: updateFlight } = useUpdateFlight();
@@ -202,11 +205,18 @@ export default function HomePage() {
    // Handler to open add activity modal
    const handleOpenAddActivity = useCallback(() => {
       if (selectedTripId && selectedCityId) {
+         setEditingActivity(null);
          setShowAddActivityModal(true);
       }
    }, [selectedTripId, selectedCityId]);
 
-   // Handler to add activity (from modal)
+   // Handler to open edit activity modal
+   const handleEditActivity = useCallback((activity: Activity) => {
+      setEditingActivity(activity);
+      setShowAddActivityModal(true);
+   }, []);
+
+   // Handler to add or update activity (from modal)
    const handleAddActivitySubmit = useCallback(async (data: {
       name: string;
       description?: string;
@@ -217,21 +227,41 @@ export default function HomePage() {
       imageUrl?: string;
    }) => {
       if (!selectedTripId || !selectedCityId) return;
-      await createActivity({
-         tripId: selectedTripId,
-         data: {
-            name: data.name,
-            cityId: selectedCityId,
-            description: data.description,
-            location: data.location,
-            scheduledTime: data.scheduledTime,
-            inTravelPlan: data.inTravelPlan,
-            activityUrl: data.activityUrl,
-            imageUrl: data.imageUrl,
-         },
-      });
+
+      if (editingActivity) {
+         // Update existing activity
+         await updateActivity({
+            tripId: selectedTripId,
+            activityId: editingActivity.id,
+            data: {
+               name: data.name,
+               description: data.description,
+               location: data.location,
+               scheduledTime: data.scheduledTime,
+               inTravelPlan: data.inTravelPlan,
+               activityUrl: data.activityUrl,
+               imageUrl: data.imageUrl,
+            },
+         });
+      } else {
+         // Create new activity
+         await createActivity({
+            tripId: selectedTripId,
+            data: {
+               name: data.name,
+               cityId: selectedCityId,
+               description: data.description,
+               location: data.location,
+               scheduledTime: data.scheduledTime,
+               inTravelPlan: data.inTravelPlan,
+               activityUrl: data.activityUrl,
+               imageUrl: data.imageUrl,
+            },
+         });
+      }
+      setEditingActivity(null);
       await refetchTrip();
-   }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
+   }, [selectedTripId, selectedCityId, editingActivity, createActivity, updateActivity, refetchTrip]);
 
    // Handler to delete activity
    const handleDeleteActivity = useCallback(async (activityId: string) => {
@@ -456,6 +486,7 @@ export default function HomePage() {
                         onUpdateActivities={handleUpdateActivities}
                         onUpdateTrip={handleUpdateTrip}
                         onAddActivity={handleOpenAddActivity}
+                        onEditActivity={handleEditActivity}
                         onDeleteActivity={handleDeleteActivity}
                         onAddRecommendedActivity={handleAddRecommendedActivity}
                         onAddFlight={handleAddFlight}
@@ -492,9 +523,13 @@ export default function HomePage() {
          {selectedCity && (
             <AddActivityModal
                isOpen={showAddActivityModal}
-               onClose={() => setShowAddActivityModal(false)}
+               onClose={() => {
+                  setShowAddActivityModal(false);
+                  setEditingActivity(null);
+               }}
                onSubmit={handleAddActivitySubmit}
                cityName={selectedCity.name}
+               initialActivity={editingActivity || undefined}
             />
          )}
       </div>

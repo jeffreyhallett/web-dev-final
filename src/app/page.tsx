@@ -29,7 +29,6 @@ import {
 import { RecommendedActivity } from '@/lib/api/client';
 
 export default function HomePage() {
-   const [view, setView] = useState<'list' | 'map'>('list');
    const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
    const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
@@ -94,6 +93,8 @@ export default function HomePage() {
                         checkOut: acc.checkOut,
                         cityId: acc.city.id,
                         bookingUrl: acc.url,
+                        confirmationNumber: acc.confirmationNumber,
+                        notes: acc.notes,
                      },
                   });
                } else if (acc.name) {
@@ -107,6 +108,8 @@ export default function HomePage() {
                         checkIn: acc.checkIn,
                         checkOut: acc.checkOut,
                         bookingUrl: acc.url,
+                        confirmationNumber: acc.confirmationNumber,
+                        notes: acc.notes,
                      },
                   });
                }
@@ -328,7 +331,7 @@ export default function HomePage() {
 
    return (
       <div className="flex flex-col h-screen">
-         <Header view={view} onViewChange={setView} />
+         <Header />
          <div className="flex flex-1 overflow-hidden">
             <aside className="w-64 flex flex-col">
                <div className="px-4 py-6 flex-1">

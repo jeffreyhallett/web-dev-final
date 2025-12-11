@@ -180,7 +180,7 @@ export default function TripView({
                   <p className="text-sm text-gray-500">{city.country}</p>
                </div>
                <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1">
-                  <CityViewMap city={city} activities={activities} />
+                  <CityViewMap city={city} activities={activities} accommodations={cityAccommodation ? [cityAccommodation] : []} />
                </div>
             </div>
 

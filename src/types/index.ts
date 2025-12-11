@@ -44,6 +44,8 @@ export interface Accommodation {
    checkOut: string;
    city: City;
    url?: string;
+   confirmationNumber?: string;
+   notes?: string;
 }
 
 export interface Flight {
@@ -56,6 +58,9 @@ export interface Flight {
    airline?: string;
    departureAirport: string;
    arrivalAirport: string;
+   confirmationNumber?: string;
+   bookingUrl?: string;
+   notes?: string;
 }
 
 export interface Train {
@@ -68,6 +73,10 @@ export interface Train {
    operator?: string;
    departureStation: string;
    arrivalStation: string;
+   confirmationNumber?: string;
+   bookingUrl?: string;
+   seatInfo?: string;
+   notes?: string;
 }
 
 export interface Note {

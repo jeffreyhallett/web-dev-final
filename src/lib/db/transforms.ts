@@ -61,6 +61,8 @@ export function dbAccommodationToAccommodation(
       checkOut: toDateOnly(dbAccommodation.check_out),
       city: city || { id: '', name: '', country: '', latitude: 0, longitude: 0 },
       url: dbAccommodation.booking_url || undefined,
+      confirmationNumber: dbAccommodation.confirmation_number || undefined,
+      notes: dbAccommodation.notes || undefined,
    };
 }
 
@@ -76,6 +78,9 @@ export function dbFlightToFlight(dbFlight: DbFlight): Flight {
       airline: dbFlight.airline || undefined,
       departureAirport: dbFlight.departure_airport,
       arrivalAirport: dbFlight.arrival_airport,
+      confirmationNumber: dbFlight.confirmation_number || undefined,
+      bookingUrl: dbFlight.booking_url || undefined,
+      notes: dbFlight.notes || undefined,
    };
 }
 
@@ -91,6 +96,10 @@ export function dbTrainToTrain(dbTrain: DbTrain): Train {
       operator: dbTrain.operator || undefined,
       departureStation: dbTrain.departure_station,
       arrivalStation: dbTrain.arrival_station,
+      confirmationNumber: dbTrain.confirmation_number || undefined,
+      bookingUrl: dbTrain.booking_url || undefined,
+      seatInfo: dbTrain.seat_info || undefined,
+      notes: dbTrain.notes || undefined,
    };
 }
 

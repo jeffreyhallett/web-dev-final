@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Flight, Train } from '@/types';
-import { PlusIcon, TrashIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, PaperAirplaneIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 interface TransportationSectionProps {
    flights: Flight[];
@@ -40,6 +40,8 @@ export default function TransportationSection({
    const [activeTab, setActiveTab] = useState<Tab>('flights');
    const [showAddForm, setShowAddForm] = useState(false);
    const [isSubmitting, setIsSubmitting] = useState(false);
+   const [expandedFlightId, setExpandedFlightId] = useState<string | null>(null);
+   const [expandedTrainId, setExpandedTrainId] = useState<string | null>(null);
 
    // Flight form state
    const [flightDeparture, setFlightDeparture] = useState('');
@@ -134,6 +136,22 @@ export default function TransportationSection({
       } catch {
          return timeString;
       }
+   };
+
+   const toggleFlightExpanded = (flightId: string) => {
+      setExpandedFlightId(expandedFlightId === flightId ? null : flightId);
+   };
+
+   const toggleTrainExpanded = (trainId: string) => {
+      setExpandedTrainId(expandedTrainId === trainId ? null : trainId);
+   };
+
+   const hasFlightDetails = (flight: Flight) => {
+      return flight.confirmationNumber || flight.bookingUrl || flight.notes;
+   };
+
+   const hasTrainDetails = (train: Train) => {
+      return train.confirmationNumber || train.bookingUrl || train.seatInfo || train.notes;
    };
 
    return (
@@ -321,35 +339,82 @@ export default function TransportationSection({
                   flights.map((flight) => (
                      <div
                         key={flight.id}
-                        className="bg-gray-50 rounded-lg p-2 flex items-start justify-between group"
+                        className="bg-gray-50 rounded-lg overflow-hidden"
                      >
-                        <div className="flex-1 min-w-0">
-                           <div className="flex items-center gap-2">
-                              <PaperAirplaneIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                              <span className="font-medium text-sm truncate">
-                                 {flight.departureAirport} → {flight.arrivalAirport}
-                              </span>
-                           </div>
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                              {flight.airline && <span>{flight.airline}</span>}
-                              {flight.airline && flight.number && <span> · </span>}
-                              {flight.number && <span>{flight.number}</span>}
-                           </div>
-                           {(flight.times.departure || flight.times.arrival) && (
-                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                                 {formatTime(flight.times.departure)}
-                                 {flight.times.departure && flight.times.arrival && ' → '}
-                                 {formatTime(flight.times.arrival)}
-                              </div>
-                           )}
-                        </div>
-                        <button
-                           onClick={() => onDeleteFlight(flight.id)}
-                           className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                           title="Delete flight"
+                        <div
+                           className="p-2 flex items-start justify-between group cursor-pointer"
+                           onClick={() => hasFlightDetails(flight) && toggleFlightExpanded(flight.id)}
                         >
-                           <TrashIcon className="w-4 h-4" />
-                        </button>
+                           <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                 <PaperAirplaneIcon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                 <span className="font-medium text-sm truncate">
+                                    {flight.departureAirport} → {flight.arrivalAirport}
+                                 </span>
+                                 {hasFlightDetails(flight) && (
+                                    expandedFlightId === flight.id ? (
+                                       <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    ) : (
+                                       <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                    )
+                                 )}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                                 {flight.airline && <span>{flight.airline}</span>}
+                                 {flight.airline && flight.number && <span> · </span>}
+                                 {flight.number && <span>{flight.number}</span>}
+                              </div>
+                              {(flight.times.departure || flight.times.arrival) && (
+                                 <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                                    {formatTime(flight.times.departure)}
+                                    {flight.times.departure && flight.times.arrival && ' → '}
+                                    {formatTime(flight.times.arrival)}
+                                 </div>
+                              )}
+                           </div>
+                           <button
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 onDeleteFlight(flight.id);
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                              title="Delete flight"
+                           >
+                              <TrashIcon className="w-4 h-4" />
+                           </button>
+                        </div>
+
+                        {/* Expanded Details */}
+                        {expandedFlightId === flight.id && hasFlightDetails(flight) && (
+                           <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
+                              {flight.confirmationNumber && (
+                                 <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-gray-500 font-medium">Confirmation:</span>
+                                    <span className="text-gray-700 font-mono">{flight.confirmationNumber}</span>
+                                 </div>
+                              )}
+                              {flight.bookingUrl && (
+                                 <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-gray-500 font-medium">Booking:</span>
+                                    <a
+                                       href={flight.bookingUrl}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="text-blue-500 hover:underline truncate"
+                                       onClick={(e) => e.stopPropagation()}
+                                    >
+                                       View booking
+                                    </a>
+                                 </div>
+                              )}
+                              {flight.notes && (
+                                 <div className="text-xs">
+                                    <span className="text-gray-500 font-medium">Notes:</span>
+                                    <p className="text-gray-700 mt-0.5">{flight.notes}</p>
+                                 </div>
+                              )}
+                           </div>
+                        )}
                      </div>
                   ))
                )
@@ -361,37 +426,90 @@ export default function TransportationSection({
                trains.map((train) => (
                   <div
                      key={train.id}
-                     className="bg-gray-50 rounded-lg p-2 flex items-start justify-between group"
+                     className="bg-gray-50 rounded-lg overflow-hidden"
                   >
-                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                           <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 14l-3-3m3 3l3-3M5 12H3m18 0h-2M7 8H5m14 0h-2" />
-                           </svg>
-                           <span className="font-medium text-sm truncate">
-                              {train.departureStation} → {train.arrivalStation}
-                           </span>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                           {train.operator && <span>{train.operator}</span>}
-                           {train.operator && train.number && <span> · </span>}
-                           {train.number && <span>{train.number}</span>}
-                        </div>
-                        {(train.times.departure || train.times.arrival) && (
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                              {formatTime(train.times.departure)}
-                              {train.times.departure && train.times.arrival && ' → '}
-                              {formatTime(train.times.arrival)}
-                           </div>
-                        )}
-                     </div>
-                     <button
-                        onClick={() => onDeleteTrain(train.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                        title="Delete train"
+                     <div
+                        className="p-2 flex items-start justify-between group cursor-pointer"
+                        onClick={() => hasTrainDetails(train) && toggleTrainExpanded(train.id)}
                      >
-                        <TrashIcon className="w-4 h-4" />
-                     </button>
+                        <div className="flex-1 min-w-0">
+                           <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19V5m0 14l-3-3m3 3l3-3M5 12H3m18 0h-2M7 8H5m14 0h-2" />
+                              </svg>
+                              <span className="font-medium text-sm truncate">
+                                 {train.departureStation} → {train.arrivalStation}
+                              </span>
+                              {hasTrainDetails(train) && (
+                                 expandedTrainId === train.id ? (
+                                    <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 ) : (
+                                    <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 )
+                              )}
+                           </div>
+                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                              {train.operator && <span>{train.operator}</span>}
+                              {train.operator && train.number && <span> · </span>}
+                              {train.number && <span>{train.number}</span>}
+                           </div>
+                           {(train.times.departure || train.times.arrival) && (
+                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                                 {formatTime(train.times.departure)}
+                                 {train.times.departure && train.times.arrival && ' → '}
+                                 {formatTime(train.times.arrival)}
+                              </div>
+                           )}
+                        </div>
+                        <button
+                           onClick={(e) => {
+                              e.stopPropagation();
+                              onDeleteTrain(train.id);
+                           }}
+                           className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                           title="Delete train"
+                        >
+                           <TrashIcon className="w-4 h-4" />
+                        </button>
+                     </div>
+
+                     {/* Expanded Details */}
+                     {expandedTrainId === train.id && hasTrainDetails(train) && (
+                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
+                           {train.confirmationNumber && (
+                              <div className="flex items-center gap-2 text-xs">
+                                 <span className="text-gray-500 font-medium">Confirmation:</span>
+                                 <span className="text-gray-700 font-mono">{train.confirmationNumber}</span>
+                              </div>
+                           )}
+                           {train.seatInfo && (
+                              <div className="flex items-center gap-2 text-xs">
+                                 <span className="text-gray-500 font-medium">Seat:</span>
+                                 <span className="text-gray-700">{train.seatInfo}</span>
+                              </div>
+                           )}
+                           {train.bookingUrl && (
+                              <div className="flex items-center gap-2 text-xs">
+                                 <span className="text-gray-500 font-medium">Booking:</span>
+                                 <a
+                                    href={train.bookingUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 hover:underline truncate"
+                                    onClick={(e) => e.stopPropagation()}
+                                 >
+                                    View booking
+                                 </a>
+                              </div>
+                           )}
+                           {train.notes && (
+                              <div className="text-xs">
+                                 <span className="text-gray-500 font-medium">Notes:</span>
+                                 <p className="text-gray-700 mt-0.5">{train.notes}</p>
+                              </div>
+                           )}
+                        </div>
+                     )}
                   </div>
                ))
             )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Accommodation, City } from '@/types';
-import { PlusIcon, TrashIcon, HomeIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, HomeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 interface AccommodationSectionProps {
    accommodation?: Accommodation;
@@ -19,6 +19,7 @@ export default function AccommodationSection({
 }: AccommodationSectionProps) {
    const [showAddForm, setShowAddForm] = useState(false);
    const [isSubmitting, setIsSubmitting] = useState(false);
+   const [isExpanded, setIsExpanded] = useState(false);
 
    // Form state
    const [name, setName] = useState('');
@@ -26,6 +27,8 @@ export default function AccommodationSection({
    const [checkIn, setCheckIn] = useState('');
    const [checkOut, setCheckOut] = useState('');
    const [url, setUrl] = useState('');
+   const [confirmationNumber, setConfirmationNumber] = useState('');
+   const [notes, setNotes] = useState('');
 
    // Initialize form with existing accommodation data
    useEffect(() => {
@@ -35,6 +38,8 @@ export default function AccommodationSection({
          setCheckIn(accommodation.checkIn || '');
          setCheckOut(accommodation.checkOut || '');
          setUrl(accommodation.url || '');
+         setConfirmationNumber(accommodation.confirmationNumber || '');
+         setNotes(accommodation.notes || '');
       } else {
          resetForm();
       }
@@ -46,6 +51,8 @@ export default function AccommodationSection({
       setCheckIn('');
       setCheckOut('');
       setUrl('');
+      setConfirmationNumber('');
+      setNotes('');
    };
 
    const handleSubmit = async (e: React.FormEvent) => {
@@ -62,6 +69,8 @@ export default function AccommodationSection({
             checkOut,
             city,
             url: url.trim() || undefined,
+            confirmationNumber: confirmationNumber.trim() || undefined,
+            notes: notes.trim() || undefined,
          });
          setShowAddForm(false);
       } catch (err) {
@@ -85,6 +94,7 @@ export default function AccommodationSection({
    };
 
    const hasAccommodation = accommodation && accommodation.name;
+   const hasExpandableDetails = accommodation && (accommodation.confirmationNumber || accommodation.url || accommodation.notes);
 
    return (
       <div className="space-y-3">
@@ -141,11 +151,25 @@ export default function AccommodationSection({
                      </div>
                   </div>
                   <input
+                     type="text"
+                     value={confirmationNumber}
+                     onChange={(e) => setConfirmationNumber(e.target.value)}
+                     placeholder="Confirmation number (optional)"
+                     className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
                      type="url"
                      value={url}
                      onChange={(e) => setUrl(e.target.value)}
                      placeholder="Booking URL (optional)"
                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <textarea
+                     value={notes}
+                     onChange={(e) => setNotes(e.target.value)}
+                     placeholder="Notes (optional)"
+                     rows={2}
+                     className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none"
                   />
                   <button
                      type="submit"
@@ -162,45 +186,82 @@ export default function AccommodationSection({
          {!showAddForm && (
             <div className="space-y-2">
                {hasAccommodation ? (
-                  <div className="bg-gray-50 rounded-lg p-2 flex items-start justify-between group">
-                     <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                           <HomeIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
-                           <span className="font-medium text-sm truncate">
-                              {accommodation.name}
-                           </span>
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                     <div
+                        className="p-2 flex items-start justify-between group cursor-pointer"
+                        onClick={() => hasExpandableDetails && setIsExpanded(!isExpanded)}
+                     >
+                        <div className="flex-1 min-w-0">
+                           <div className="flex items-center gap-2">
+                              <HomeIcon className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                              <span className="font-medium text-sm truncate">
+                                 {accommodation.name}
+                              </span>
+                              {hasExpandableDetails && (
+                                 isExpanded ? (
+                                    <ChevronUpIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 ) : (
+                                    <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                 )
+                              )}
+                           </div>
+                           {accommodation.address && (
+                              <div className="text-xs text-gray-500 mt-0.5 ml-6 truncate">
+                                 {accommodation.address}
+                              </div>
+                           )}
+                           {(accommodation.checkIn || accommodation.checkOut) && (
+                              <div className="text-xs text-gray-500 mt-0.5 ml-6">
+                                 {formatDate(accommodation.checkIn)}
+                                 {accommodation.checkIn && accommodation.checkOut && ' → '}
+                                 {formatDate(accommodation.checkOut)}
+                              </div>
+                           )}
                         </div>
-                        {accommodation.address && (
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6 truncate">
-                              {accommodation.address}
-                           </div>
-                        )}
-                        {(accommodation.checkIn || accommodation.checkOut) && (
-                           <div className="text-xs text-gray-500 mt-0.5 ml-6">
-                              {formatDate(accommodation.checkIn)}
-                              {accommodation.checkIn && accommodation.checkOut && ' → '}
-                              {formatDate(accommodation.checkOut)}
-                           </div>
-                        )}
-                        {accommodation.url && (
-                           <a
-                              href={accommodation.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-500 hover:underline mt-0.5 ml-6 block truncate"
+                        {onDelete && (
+                           <button
+                              onClick={(e) => {
+                                 e.stopPropagation();
+                                 onDelete();
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                              title="Delete accommodation"
                            >
-                              View booking
-                           </a>
+                              <TrashIcon className="w-4 h-4" />
+                           </button>
                         )}
                      </div>
-                     {onDelete && (
-                        <button
-                           onClick={onDelete}
-                           className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                           title="Delete accommodation"
-                        >
-                           <TrashIcon className="w-4 h-4" />
-                        </button>
+
+                     {/* Expanded Details */}
+                     {isExpanded && hasExpandableDetails && (
+                        <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5">
+                           {accommodation.confirmationNumber && (
+                              <div className="flex items-center gap-2 text-xs">
+                                 <span className="text-gray-500 font-medium">Confirmation:</span>
+                                 <span className="text-gray-700 font-mono">{accommodation.confirmationNumber}</span>
+                              </div>
+                           )}
+                           {accommodation.url && (
+                              <div className="flex items-center gap-2 text-xs">
+                                 <span className="text-gray-500 font-medium">Booking:</span>
+                                 <a
+                                    href={accommodation.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-500 hover:underline truncate"
+                                    onClick={(e) => e.stopPropagation()}
+                                 >
+                                    View booking
+                                 </a>
+                              </div>
+                           )}
+                           {accommodation.notes && (
+                              <div className="text-xs">
+                                 <span className="text-gray-500 font-medium">Notes:</span>
+                                 <p className="text-gray-700 mt-0.5">{accommodation.notes}</p>
+                              </div>
+                           )}
+                        </div>
                      )}
                   </div>
                ) : (

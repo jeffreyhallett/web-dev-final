@@ -130,6 +130,8 @@ export const accommodationsApi = {
       checkIn?: string;
       checkOut?: string;
       bookingUrl?: string;
+      confirmationNumber?: string;
+      notes?: string;
    }) =>
       fetchApi<Accommodation>(`/trips/${tripId}/accommodations`, {
          method: 'POST',
@@ -143,6 +145,8 @@ export const accommodationsApi = {
       checkIn: string;
       checkOut: string;
       bookingUrl: string;
+      confirmationNumber: string;
+      notes: string;
    }>) =>
       fetchApi<Accommodation>(`/trips/${tripId}/accommodations/${accommodationId}`, {
          method: 'PUT',

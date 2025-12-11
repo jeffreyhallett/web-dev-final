@@ -219,8 +219,8 @@ export default function TripView({
                </div>
             </div>
 
-            <div className="flex flex-col">
-               <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto">
+            <div className="flex flex-col min-h-0">
+               <div className="bg-white rounded-xl shadow-sm p-6 flex-1 overflow-y-auto min-h-0">
                   <h3 className="text-lg font-semibold mb-4">Trip Details</h3>
                   <div className="space-y-4">
                      <AccommodationSection

@@ -1,6 +1,6 @@
 'use client';
 
-import { City, Trip } from '@/types';
+import { Trip } from '@/types';
 import { useState } from 'react';
 import { PlusIcon, ChevronDownIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
@@ -10,7 +10,7 @@ interface TripListProps {
    selectedCityId: string | null;
    onSelectTrip: (tripId: string) => void;
    onSelectCity: (cityId: string) => void;
-   onAddCity: (city: City) => void;
+   onAddCity: () => void;
    onCreateTrip?: () => void;
 }
 
@@ -23,7 +23,6 @@ export default function TripList({
    onAddCity,
    onCreateTrip,
 }: TripListProps) {
-   const [showAddCity, setShowAddCity] = useState(false);
    const [isTripDropdownOpen, setIsTripDropdownOpen] = useState(false);
 
    const selectedTrip = trips.find(t => t.id === selectedTripId);
@@ -155,7 +154,7 @@ export default function TripList({
                </ul>
 
                <button
-                  onClick={() => setShowAddCity(!showAddCity)}
+                  onClick={onAddCity}
                   className="rounded-xl mt-4 w-full px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm font-medium"
                >
                   <PlusIcon className="h-5 w-5" />

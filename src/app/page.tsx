@@ -1,11 +1,14 @@
 'use client';
 
 import TripList from '@/components/trip/tripList';
-import { Trip, City, Activity } from '@/types';
+import { Trip, Activity } from '@/types';
 import { useState, useCallback } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
 import { TrashIcon } from '@heroicons/react/24/outline';
+import AddTripModal from '@/components/trip/addTripModal';
+import AddCityModal from '@/components/city/addCityModal';
+import AddActivityModal from '@/components/activity/addActivityModal';
 import {
    useTrips,
    useTrip,
@@ -16,12 +19,24 @@ import {
    useCreateAccommodation,
    useUpdateNote,
    useCreateNote,
+   useCreateActivity,
+   useDeleteActivity,
+   useCreateFlight,
+   useDeleteFlight,
+   useCreateTrain,
+   useDeleteTrain,
 } from '@/lib/api';
+import { RecommendedActivity } from '@/lib/api/client';
 
 export default function HomePage() {
    const [view, setView] = useState<'list' | 'map'>('list');
    const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
    const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+
+   // Modal state
+   const [showAddTripModal, setShowAddTripModal] = useState(false);
+   const [showAddCityModal, setShowAddCityModal] = useState(false);
+   const [showAddActivityModal, setShowAddActivityModal] = useState(false);
 
    // Fetch trips from API
    const { data: trips, isLoading: tripsLoading, error: tripsError, refetch: refetchTrips } = useTrips();
@@ -37,6 +52,12 @@ export default function HomePage() {
    const { mutate: updateAccommodation } = useUpdateAccommodation();
    const { mutate: createNote } = useCreateNote();
    const { mutate: updateNote } = useUpdateNote();
+   const { mutate: createActivity } = useCreateActivity();
+   const { mutate: deleteActivity } = useDeleteActivity();
+   const { mutate: createFlight } = useCreateFlight();
+   const { mutate: deleteFlight } = useDeleteFlight();
+   const { mutate: createTrain } = useCreateTrain();
+   const { mutate: deleteTrain } = useDeleteTrain();
 
    // Derived values
    const selectedCity = selectedTrip?.cities.find(c => c.id === selectedCityId);
@@ -45,26 +66,6 @@ export default function HomePage() {
    const handleSelectTrip = useCallback((tripId: string) => {
       setSelectedTripId(tripId);
    }, []);
-
-   // Handler to add a city to the current trip
-   const handleAddCity = useCallback(async (city: City) => {
-      if (!selectedTripId) return;
-
-      try {
-         await createCity({
-            tripId: selectedTripId,
-            data: {
-               name: city.name,
-               country: city.country,
-               latitude: city.latitude,
-               longitude: city.longitude,
-            },
-         });
-         await refetchTrip();
-      } catch (error) {
-         console.error('Failed to add city:', error);
-      }
-   }, [selectedTripId, createCity, refetchTrip]);
 
    // Handler to update activities within a trip
    const handleUpdateActivities = useCallback((newActivities: Activity[]) => {
@@ -161,16 +162,149 @@ export default function HomePage() {
       }
    }, [selectedTripId, deleteTrip, refetchTrips]);
 
-   // Handler to create a new trip
-   const handleCreateTrip = useCallback(async () => {
-      try {
-         const newTrip = await createTrip({ name: 'New Trip' });
-         await refetchTrips();
-         setSelectedTripId(newTrip.id);
-      } catch (error) {
-         console.error('Failed to create trip:', error);
-      }
+   // Handler to open create trip modal
+   const handleOpenCreateTrip = useCallback(() => {
+      setShowAddTripModal(true);
+   }, []);
+
+   // Handler to create a new trip (from modal)
+   const handleCreateTrip = useCallback(async (data: { name: string; arrivalDate?: string; departureDate?: string }) => {
+      const newTrip = await createTrip(data);
+      await refetchTrips();
+      setSelectedTripId(newTrip.id);
    }, [createTrip, refetchTrips]);
+
+   // Handler to open add city modal
+   const handleOpenAddCity = useCallback(() => {
+      if (selectedTripId) {
+         setShowAddCityModal(true);
+      }
+   }, [selectedTripId]);
+
+   // Handler to add city (from modal)
+   const handleAddCitySubmit = useCallback(async (data: { name: string; country: string; latitude: number; longitude: number }) => {
+      if (!selectedTripId) return;
+      const newCity = await createCity({
+         tripId: selectedTripId,
+         data,
+      });
+      await refetchTrip();
+      setSelectedCityId(newCity.id);
+   }, [selectedTripId, createCity, refetchTrip]);
+
+   // Handler to open add activity modal
+   const handleOpenAddActivity = useCallback(() => {
+      if (selectedTripId && selectedCityId) {
+         setShowAddActivityModal(true);
+      }
+   }, [selectedTripId, selectedCityId]);
+
+   // Handler to add activity (from modal)
+   const handleAddActivitySubmit = useCallback(async (data: {
+      name: string;
+      description?: string;
+      location?: string;
+      scheduledTime?: string;
+      inTravelPlan: boolean;
+      activityUrl?: string;
+      imageUrl?: string;
+   }) => {
+      if (!selectedTripId || !selectedCityId) return;
+      await createActivity({
+         tripId: selectedTripId,
+         data: {
+            name: data.name,
+            cityId: selectedCityId,
+            description: data.description,
+            location: data.location,
+            scheduledTime: data.scheduledTime,
+            inTravelPlan: data.inTravelPlan,
+            activityUrl: data.activityUrl,
+            imageUrl: data.imageUrl,
+         },
+      });
+      await refetchTrip();
+   }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
+
+   // Handler to delete activity
+   const handleDeleteActivity = useCallback(async (activityId: string) => {
+      if (!selectedTripId) return;
+      await deleteActivity({
+         tripId: selectedTripId,
+         activityId,
+      });
+      await refetchTrip();
+   }, [selectedTripId, deleteActivity, refetchTrip]);
+
+   // Handler to add flight
+   const handleAddFlight = useCallback(async (data: {
+      departureAirport: string;
+      arrivalAirport: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await createFlight({
+         tripId: selectedTripId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, createFlight, refetchTrip]);
+
+   // Handler to delete flight
+   const handleDeleteFlight = useCallback(async (flightId: string) => {
+      if (!selectedTripId) return;
+      await deleteFlight({
+         tripId: selectedTripId,
+         flightId,
+      });
+      await refetchTrip();
+   }, [selectedTripId, deleteFlight, refetchTrip]);
+
+   // Handler to add train
+   const handleAddTrain = useCallback(async (data: {
+      departureStation: string;
+      arrivalStation: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await createTrain({
+         tripId: selectedTripId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, createTrain, refetchTrip]);
+
+   // Handler to delete train
+   const handleDeleteTrain = useCallback(async (trainId: string) => {
+      if (!selectedTripId) return;
+      await deleteTrain({
+         tripId: selectedTripId,
+         trainId,
+      });
+      await refetchTrip();
+   }, [selectedTripId, deleteTrain, refetchTrip]);
+
+   // Handler to add recommended activity
+   const handleAddRecommendedActivity = useCallback(async (activity: RecommendedActivity) => {
+      if (!selectedTripId || !selectedCityId) return;
+      await createActivity({
+         tripId: selectedTripId,
+         data: {
+            name: activity.name,
+            cityId: selectedCityId,
+            description: activity.description,
+            location: activity.location,
+            inTravelPlan: true,
+         },
+      });
+      await refetchTrip();
+   }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
 
    // Loading state
    if (tripsLoading) {
@@ -204,8 +338,8 @@ export default function HomePage() {
                      selectedCityId={selectedCityId}
                      onSelectTrip={handleSelectTrip}
                      onSelectCity={setSelectedCityId}
-                     onAddCity={handleAddCity}
-                     onCreateTrip={handleCreateTrip}
+                     onAddCity={handleOpenAddCity}
+                     onCreateTrip={handleOpenCreateTrip}
                   />
                </div>
             </aside>
@@ -264,6 +398,13 @@ export default function HomePage() {
                         activities={selectedTrip.activities.filter(a => a.city.id === selectedCityId)}
                         onUpdateActivities={handleUpdateActivities}
                         onUpdateTrip={handleUpdateTrip}
+                        onAddActivity={handleOpenAddActivity}
+                        onDeleteActivity={handleDeleteActivity}
+                        onAddRecommendedActivity={handleAddRecommendedActivity}
+                        onAddFlight={handleAddFlight}
+                        onAddTrain={handleAddTrain}
+                        onDeleteFlight={handleDeleteFlight}
+                        onDeleteTrain={handleDeleteTrain}
                      />
                   ) : (
                      <div className="flex items-center justify-center h-full text-gray-500">
@@ -275,6 +416,28 @@ export default function HomePage() {
                </div>
             </main>
          </div>
+
+         {/* Modals */}
+         <AddTripModal
+            isOpen={showAddTripModal}
+            onClose={() => setShowAddTripModal(false)}
+            onSubmit={handleCreateTrip}
+         />
+
+         <AddCityModal
+            isOpen={showAddCityModal}
+            onClose={() => setShowAddCityModal(false)}
+            onSubmit={handleAddCitySubmit}
+         />
+
+         {selectedCity && (
+            <AddActivityModal
+               isOpen={showAddActivityModal}
+               onClose={() => setShowAddActivityModal(false)}
+               onSubmit={handleAddActivitySubmit}
+               cityName={selectedCity.name}
+            />
+         )}
       </div>
    );
 }

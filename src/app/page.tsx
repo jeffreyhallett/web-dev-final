@@ -1,7 +1,7 @@
 'use client';
 
 import TripList from '@/components/trip/tripList';
-import { Trip, Activity } from '@/types';
+import type { Trip, Activity } from '@/types';
 import { useState, useCallback } from 'react';
 import TripView from '@/components/city/tripView';
 import Header from '@/components/layout/header';
@@ -20,16 +20,18 @@ import {
    useUpdateNote,
    useCreateNote,
    useCreateActivity,
+   useUpdateActivity,
    useDeleteActivity,
    useCreateFlight,
+   useUpdateFlight,
    useDeleteFlight,
    useCreateTrain,
+   useUpdateTrain,
    useDeleteTrain,
 } from '@/lib/api';
 import { RecommendedActivity } from '@/lib/api/client';
 
 export default function HomePage() {
-   const [view, setView] = useState<'list' | 'map'>('list');
    const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
    const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
@@ -37,6 +39,7 @@ export default function HomePage() {
    const [showAddTripModal, setShowAddTripModal] = useState(false);
    const [showAddCityModal, setShowAddCityModal] = useState(false);
    const [showAddActivityModal, setShowAddActivityModal] = useState(false);
+   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
    // Fetch trips from API
    const { data: trips, isLoading: tripsLoading, error: tripsError, refetch: refetchTrips } = useTrips();
@@ -53,10 +56,13 @@ export default function HomePage() {
    const { mutate: createNote } = useCreateNote();
    const { mutate: updateNote } = useUpdateNote();
    const { mutate: createActivity } = useCreateActivity();
+   const { mutate: updateActivity } = useUpdateActivity();
    const { mutate: deleteActivity } = useDeleteActivity();
    const { mutate: createFlight } = useCreateFlight();
+   const { mutate: updateFlight } = useUpdateFlight();
    const { mutate: deleteFlight } = useDeleteFlight();
    const { mutate: createTrain } = useCreateTrain();
+   const { mutate: updateTrain } = useUpdateTrain();
    const { mutate: deleteTrain } = useDeleteTrain();
 
    // Derived values
@@ -94,6 +100,8 @@ export default function HomePage() {
                         checkOut: acc.checkOut,
                         cityId: acc.city.id,
                         bookingUrl: acc.url,
+                        confirmationNumber: acc.confirmationNumber,
+                        notes: acc.notes,
                      },
                   });
                } else if (acc.name) {
@@ -107,6 +115,8 @@ export default function HomePage() {
                         checkIn: acc.checkIn,
                         checkOut: acc.checkOut,
                         bookingUrl: acc.url,
+                        confirmationNumber: acc.confirmationNumber,
+                        notes: acc.notes,
                      },
                   });
                }
@@ -195,11 +205,18 @@ export default function HomePage() {
    // Handler to open add activity modal
    const handleOpenAddActivity = useCallback(() => {
       if (selectedTripId && selectedCityId) {
+         setEditingActivity(null);
          setShowAddActivityModal(true);
       }
    }, [selectedTripId, selectedCityId]);
 
-   // Handler to add activity (from modal)
+   // Handler to open edit activity modal
+   const handleEditActivity = useCallback((activity: Activity) => {
+      setEditingActivity(activity);
+      setShowAddActivityModal(true);
+   }, []);
+
+   // Handler to add or update activity (from modal)
    const handleAddActivitySubmit = useCallback(async (data: {
       name: string;
       description?: string;
@@ -210,21 +227,41 @@ export default function HomePage() {
       imageUrl?: string;
    }) => {
       if (!selectedTripId || !selectedCityId) return;
-      await createActivity({
-         tripId: selectedTripId,
-         data: {
-            name: data.name,
-            cityId: selectedCityId,
-            description: data.description,
-            location: data.location,
-            scheduledTime: data.scheduledTime,
-            inTravelPlan: data.inTravelPlan,
-            activityUrl: data.activityUrl,
-            imageUrl: data.imageUrl,
-         },
-      });
+
+      if (editingActivity) {
+         // Update existing activity
+         await updateActivity({
+            tripId: selectedTripId,
+            activityId: editingActivity.id,
+            data: {
+               name: data.name,
+               description: data.description,
+               location: data.location,
+               scheduledTime: data.scheduledTime,
+               inTravelPlan: data.inTravelPlan,
+               activityUrl: data.activityUrl,
+               imageUrl: data.imageUrl,
+            },
+         });
+      } else {
+         // Create new activity
+         await createActivity({
+            tripId: selectedTripId,
+            data: {
+               name: data.name,
+               cityId: selectedCityId,
+               description: data.description,
+               location: data.location,
+               scheduledTime: data.scheduledTime,
+               inTravelPlan: data.inTravelPlan,
+               activityUrl: data.activityUrl,
+               imageUrl: data.imageUrl,
+            },
+         });
+      }
+      setEditingActivity(null);
       await refetchTrip();
-   }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
+   }, [selectedTripId, selectedCityId, editingActivity, createActivity, updateActivity, refetchTrip]);
 
    // Handler to delete activity
    const handleDeleteActivity = useCallback(async (activityId: string) => {
@@ -244,6 +281,9 @@ export default function HomePage() {
       airline?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
    }) => {
       if (!selectedTripId) return;
       await createFlight({
@@ -252,6 +292,27 @@ export default function HomePage() {
       });
       await refetchTrip();
    }, [selectedTripId, createFlight, refetchTrip]);
+
+   // Handler to update flight
+   const handleUpdateFlight = useCallback(async (flightId: string, data: {
+      departureAirport?: string;
+      arrivalAirport?: string;
+      flightNumber?: string;
+      airline?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      notes?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await updateFlight({
+         tripId: selectedTripId,
+         flightId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, updateFlight, refetchTrip]);
 
    // Handler to delete flight
    const handleDeleteFlight = useCallback(async (flightId: string) => {
@@ -271,6 +332,10 @@ export default function HomePage() {
       operator?: string;
       departureTime?: string;
       arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
    }) => {
       if (!selectedTripId) return;
       await createTrain({
@@ -279,6 +344,28 @@ export default function HomePage() {
       });
       await refetchTrip();
    }, [selectedTripId, createTrain, refetchTrip]);
+
+   // Handler to update train
+   const handleUpdateTrain = useCallback(async (trainId: string, data: {
+      departureStation?: string;
+      arrivalStation?: string;
+      trainNumber?: string;
+      operator?: string;
+      departureTime?: string;
+      arrivalTime?: string;
+      confirmationNumber?: string;
+      bookingUrl?: string;
+      seatInfo?: string;
+      notes?: string;
+   }) => {
+      if (!selectedTripId) return;
+      await updateTrain({
+         tripId: selectedTripId,
+         trainId,
+         data,
+      });
+      await refetchTrip();
+   }, [selectedTripId, updateTrain, refetchTrip]);
 
    // Handler to delete train
    const handleDeleteTrain = useCallback(async (trainId: string) => {
@@ -328,7 +415,7 @@ export default function HomePage() {
 
    return (
       <div className="flex flex-col h-screen">
-         <Header view={view} onViewChange={setView} />
+         <Header />
          <div className="flex flex-1 overflow-hidden">
             <aside className="w-64 flex flex-col">
                <div className="px-4 py-6 flex-1">
@@ -399,10 +486,13 @@ export default function HomePage() {
                         onUpdateActivities={handleUpdateActivities}
                         onUpdateTrip={handleUpdateTrip}
                         onAddActivity={handleOpenAddActivity}
+                        onEditActivity={handleEditActivity}
                         onDeleteActivity={handleDeleteActivity}
                         onAddRecommendedActivity={handleAddRecommendedActivity}
                         onAddFlight={handleAddFlight}
                         onAddTrain={handleAddTrain}
+                        onUpdateFlight={handleUpdateFlight}
+                        onUpdateTrain={handleUpdateTrain}
                         onDeleteFlight={handleDeleteFlight}
                         onDeleteTrain={handleDeleteTrain}
                      />
@@ -433,9 +523,13 @@ export default function HomePage() {
          {selectedCity && (
             <AddActivityModal
                isOpen={showAddActivityModal}
-               onClose={() => setShowAddActivityModal(false)}
+               onClose={() => {
+                  setShowAddActivityModal(false);
+                  setEditingActivity(null);
+               }}
                onSubmit={handleAddActivitySubmit}
                cityName={selectedCity.name}
+               initialActivity={editingActivity || undefined}
             />
          )}
       </div>

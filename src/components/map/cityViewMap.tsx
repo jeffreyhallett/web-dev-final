@@ -1,12 +1,13 @@
 'use client';
 
-import { City, Activity } from '@/types';
+import { City, Activity, Accommodation } from '@/types';
 import { useGoogleMaps } from '@/lib/hooks/googleMapsHook';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface CityDetailMapProps {
    city: City;
    activities?: Activity[];
+   accommodations?: Accommodation[];
 }
 
 interface ActivityLocation {
@@ -14,13 +15,20 @@ interface ActivityLocation {
    position: google.maps.LatLngLiteral;
 }
 
-export default function CityViewMap({ city, activities = [] }: CityDetailMapProps) {
+interface AccommodationLocation {
+   accommodation: Accommodation;
+   position: google.maps.LatLngLiteral;
+}
+
+export default function CityViewMap({ city, activities = [], accommodations = [] }: CityDetailMapProps) {
    const mapRef = useRef<HTMLDivElement | null>(null);
    const { isLoaded, error } = useGoogleMaps();
    const [map, setMap] = useState<google.maps.Map | null>(null);
    const cityMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
    const activityMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+   const accommodationMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
    const [activityLocations, setActivityLocations] = useState<ActivityLocation[]>([]);
+   const [accommodationLocations, setAccommodationLocations] = useState<AccommodationLocation[]>([]);
    const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
    // Geocode activity locations
@@ -65,10 +73,58 @@ export default function CityViewMap({ city, activities = [] }: CityDetailMapProp
       setActivityLocations(results.filter((r): r is ActivityLocation => r !== null));
    }, [isLoaded, activities, city.name, city.country, city.latitude, city.longitude]);
 
+   // Geocode accommodation locations
+   const geocodeAccommodations = useCallback(async () => {
+      if (!isLoaded || !accommodations.length) {
+         setAccommodationLocations([]);
+         return;
+      }
+
+      if (!geocoderRef.current) {
+         geocoderRef.current = new google.maps.Geocoder();
+      }
+
+      // Only geocode accommodations that have addresses
+      const accommodationsWithAddress = accommodations.filter(a => a.address && a.address.trim());
+
+      const locationPromises = accommodationsWithAddress.map(async (accommodation) => {
+         try {
+            const result = await geocoderRef.current!.geocode({
+               address: `${accommodation.address}, ${city.name}, ${city.country}`,
+               bounds: {
+                  north: city.latitude + 0.1,
+                  south: city.latitude - 0.1,
+                  east: city.longitude + 0.1,
+                  west: city.longitude - 0.1,
+               },
+            });
+
+            if (result.results.length > 0) {
+               const location = result.results[0].geometry.location;
+               return {
+                  accommodation,
+                  position: { lat: location.lat(), lng: location.lng() },
+               };
+            }
+         } catch (err) {
+            console.warn(`Failed to geocode address for ${accommodation.name}:`, err);
+         }
+         return null;
+      });
+
+      const results = await Promise.all(locationPromises);
+      setAccommodationLocations(results.filter((r): r is AccommodationLocation => r !== null));
+   }, [isLoaded, accommodations, city.name, city.country, city.latitude, city.longitude]);
+
    // Geocode when activities or city changes
    useEffect(() => {
       geocodeActivities();
    }, [geocodeActivities]);
+
+   // Geocode when accommodations or city changes
+   useEffect(() => {
+      geocodeAccommodations();
+   }, [geocodeAccommodations]);
 
    // Create map once
    useEffect(() => {
@@ -163,17 +219,93 @@ export default function CityViewMap({ city, activities = [] }: CityDetailMapProp
 
          activityMarkersRef.current.push(marker);
       });
+   }, [map, activityLocations]);
 
-      // Fit bounds to show all markers if there are activity markers
-      if (activityLocations.length > 0) {
+   // Update accommodation markers when locations change
+   useEffect(() => {
+      if (!map) return;
+
+      // Remove old accommodation markers
+      accommodationMarkersRef.current.forEach(marker => {
+         marker.map = null;
+      });
+      accommodationMarkersRef.current = [];
+
+      // Create new accommodation markers
+      accommodationLocations.forEach(({ accommodation, position }) => {
+         // Create custom marker content (purple for hotels)
+         const markerContent = document.createElement('div');
+         markerContent.className = 'accommodation-marker';
+         markerContent.innerHTML = `
+            <div style="
+               background-color: #a855f7;
+               border: 2px solid white;
+               border-radius: 50%;
+               width: 32px;
+               height: 32px;
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+               cursor: pointer;
+            ">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19 9.3V4h-3v2.6L12 3 2 12h3v8h5v-6h4v6h5v-8h3l-3-2.7zm-9 .7c0-1.1.9-2 2-2s2 .9 2 2h-4z"/>
+               </svg>
+            </div>
+         `;
+
+         const marker = new google.maps.marker.AdvancedMarkerElement({
+            position,
+            map: map,
+            title: accommodation.name,
+            content: markerContent,
+         });
+
+         // Add click listener to show info window
+         const checkInOut = accommodation.checkIn && accommodation.checkOut
+            ? `${accommodation.checkIn} → ${accommodation.checkOut}`
+            : '';
+
+         const infoWindow = new google.maps.InfoWindow({
+            content: `
+               <div style="padding: 8px; max-width: 200px;">
+                  <h3 style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px;">${accommodation.name}</h3>
+                  ${accommodation.address ? `<p style="margin: 0; font-size: 12px; color: #666;">${accommodation.address}</p>` : ''}
+                  ${checkInOut ? `<p style="margin: 4px 0 0 0; font-size: 11px; color: #999;">${checkInOut}</p>` : ''}
+               </div>
+            `,
+         });
+
+         marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+         });
+
+         accommodationMarkersRef.current.push(marker);
+      });
+   }, [map, accommodationLocations]);
+
+   // Fit bounds to show all markers
+   useEffect(() => {
+      if (!map) return;
+
+      const allLocations = [...activityLocations, ...accommodationLocations];
+
+      if (allLocations.length > 0) {
          const bounds = new google.maps.LatLngBounds();
          bounds.extend({ lat: city.latitude, lng: city.longitude });
+
          activityLocations.forEach(({ position }) => {
             bounds.extend(position);
          });
+
+         accommodationLocations.forEach(({ position }) => {
+            bounds.extend(position);
+         });
+
          map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
       }
-   }, [map, activityLocations, city.latitude, city.longitude]);
+   }, [map, activityLocations, accommodationLocations, city.latitude, city.longitude]);
 
    if (error) {
       return (

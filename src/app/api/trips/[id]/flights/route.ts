@@ -5,7 +5,6 @@ import { dbFlightToFlight } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/flights - Get all flights for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -29,7 +28,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/flights - Create a new flight
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -50,7 +48,6 @@ export async function POST(
          notes,
       } = body;
 
-      // Validate required fields
       if (!departureAirport || !arrivalAirport) {
          return NextResponse.json(
             { error: 'Departure and arrival airports are required' },

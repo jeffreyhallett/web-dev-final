@@ -9,7 +9,6 @@ interface AddCityModalProps {
    onSubmit: (data: { name: string; country: string; latitude: number; longitude: number }) => Promise<void>;
 }
 
-// Common city coordinates for quick lookup
 const CITY_PRESETS: Record<string, { country: string; lat: number; lng: number }> = {
    'Paris': { country: 'France', lat: 48.8566, lng: 2.3522 },
    'London': { country: 'United Kingdom', lat: 51.5074, lng: -0.1278 },
@@ -33,7 +32,6 @@ export default function AddCityModal({ isOpen, onClose, onSubmit }: AddCityModal
 
    const handleCityNameChange = (value: string) => {
       setName(value);
-      // Auto-fill if city is in presets
       const preset = CITY_PRESETS[value];
       if (preset) {
          setCountry(preset.country);
@@ -75,7 +73,6 @@ export default function AddCityModal({ isOpen, onClose, onSubmit }: AddCityModal
             latitude: lat,
             longitude: lng,
          });
-         // Reset form
          setName('');
          setCountry('');
          setLatitude('');

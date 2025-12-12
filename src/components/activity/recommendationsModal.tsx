@@ -51,7 +51,6 @@ function RecommendationCard({
       <div className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
          <div className="flex gap-4">
             <div className="flex-1">
-               {/* Category badge */}
                <div className="flex items-center gap-2 mb-2">
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${config.bg} ${config.text}`}>
                      {config.icon} {activity.category}
@@ -64,13 +63,10 @@ function RecommendationCard({
                   )}
                </div>
 
-               {/* Name */}
                <h3 className="font-semibold text-gray-900 mb-1">{activity.name}</h3>
 
-               {/* Description */}
                <p className="text-sm text-gray-600 mb-2">{activity.description}</p>
 
-               {/* Location */}
                {activity.location && (
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-2">
                      <MapPinIcon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -78,7 +74,6 @@ function RecommendationCard({
                   </div>
                )}
 
-               {/* Tip */}
                {activity.tip && (
                   <div className="flex items-start gap-1.5 text-xs bg-amber-50 text-amber-800 p-2 rounded-lg">
                      <LightBulbIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
@@ -87,7 +82,6 @@ function RecommendationCard({
                )}
             </div>
 
-            {/* Add button */}
             <div className="flex-shrink-0">
                <button
                   onClick={onAdd}
@@ -126,14 +120,12 @@ export default function RecommendationsModal({
    const [addingActivityName, setAddingActivityName] = useState<string | null>(null);
    const [addedActivities, setAddedActivities] = useState<Set<string>>(new Set());
 
-   // Fetch recommendations when modal opens and there are none
    useEffect(() => {
       if (isOpen && recommendations.length === 0 && !isLoading && !error) {
          onFetchRecommendations();
       }
    }, [isOpen, recommendations.length, isLoading, error, onFetchRecommendations]);
 
-   // Reset added activities when recommendations change
    useEffect(() => {
       setAddedActivities(new Set());
    }, [recommendations]);
@@ -148,7 +140,6 @@ export default function RecommendationsModal({
       }
    };
 
-   // Handle escape key and backdrop click
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape' && isOpen) {
@@ -184,7 +175,6 @@ export default function RecommendationsModal({
          onClick={handleBackdropClick}
       >
          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-500 to-purple-500">
                <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-lg">
@@ -203,9 +193,7 @@ export default function RecommendationsModal({
                </button>
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-               {/* Loading */}
                {isLoading && (
                   <div className="flex flex-col items-center justify-center py-12">
                      <div className="relative mb-4">
@@ -217,7 +205,6 @@ export default function RecommendationsModal({
                   </div>
                )}
 
-               {/* Error */}
                {error && !isLoading && (
                   <div className="flex flex-col items-center justify-center py-12">
                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
@@ -234,7 +221,6 @@ export default function RecommendationsModal({
                   </div>
                )}
 
-               {/* Recommendations list */}
                {!isLoading && !error && recommendations.length > 0 && (
                   <div className="space-y-4">
                      {recommendations.map((activity, index) => (
@@ -249,7 +235,6 @@ export default function RecommendationsModal({
                   </div>
                )}
 
-               {/* Empty state (shouldn't happen often due to auto-fetch) */}
                {!isLoading && !error && recommendations.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-12">
                      <SparklesIcon className="w-12 h-12 text-indigo-300 mb-4" />
@@ -264,7 +249,6 @@ export default function RecommendationsModal({
                )}
             </div>
 
-            {/* Footer */}
             {!isLoading && recommendations.length > 0 && (
                <div className="px-6 py-4 border-t border-gray-100 bg-white flex justify-between items-center">
                   <button

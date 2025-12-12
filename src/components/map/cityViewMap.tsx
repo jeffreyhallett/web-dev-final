@@ -24,23 +24,19 @@ export default function CityViewMap({ city, activities = [], accommodations = []
    const mapRef = useRef<HTMLDivElement | null>(null);
    const { isLoaded, error } = useGoogleMaps();
    const [map, setMap] = useState<google.maps.Map | null>(null);
-   const cityMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
    const activityMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
    const accommodationMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
    const [activityLocations, setActivityLocations] = useState<ActivityLocation[]>([]);
    const [accommodationLocations, setAccommodationLocations] = useState<AccommodationLocation[]>([]);
    const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
-   // Geocode when activities or city changes
    useEffect(() => {
-      // Skip geocoding if not loaded or no activities
       if (!isLoaded || !activities.length) {
          return;
       }
 
       let cancelled = false;
 
-      // Start async geocoding work
       const geocodeActivities = async () => {
          if (!geocoderRef.current) {
             geocoderRef.current = new google.maps.Geocoder();
@@ -86,22 +82,18 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       };
    }, [isLoaded, activities, city.name, city.country, city.latitude, city.longitude]);
 
-   // Geocode when accommodations or city changes
    useEffect(() => {
-      // Skip geocoding if not loaded or no accommodations
       if (!isLoaded || !accommodations.length) {
          return;
       }
 
       let cancelled = false;
 
-      // Start async geocoding work
       const geocodeAccommodations = async () => {
          if (!geocoderRef.current) {
             geocoderRef.current = new google.maps.Geocoder();
          }
 
-         // Only geocode accommodations that have addresses
          const accommodationsWithAddress = accommodations.filter(a => a.address && a.address.trim());
 
          const locationPromises = accommodationsWithAddress.map(async (accommodation) => {
@@ -142,7 +134,6 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       };
    }, [isLoaded, accommodations, city.name, city.country, city.latitude, city.longitude]);
 
-   // Create map once
    useEffect(() => {
       if (!isLoaded || !mapRef.current || map) return;
 
@@ -157,39 +148,22 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       setMap(newMap);
    }, [isLoaded, map, city.latitude, city.longitude]);
 
-   // Update map center and city marker when city changes
    useEffect(() => {
       if (!map) return;
 
       const newCenter = { lat: city.latitude, lng: city.longitude };
       map.setCenter(newCenter);
-
-      // Remove old city marker
-      if (cityMarkerRef.current) {
-         cityMarkerRef.current.map = null;
-      }
-
-      // Create new city marker
-      cityMarkerRef.current = new google.maps.marker.AdvancedMarkerElement({
-         position: newCenter,
-         map: map,
-         title: city.name,
-      });
    }, [map, city]);
 
-   // Update activity markers when locations change
    useEffect(() => {
       if (!map) return;
 
-      // Remove old activity markers
       activityMarkersRef.current.forEach(marker => {
          marker.map = null;
       });
       activityMarkersRef.current = [];
 
-      // Create new activity markers
       activityLocations.forEach(({ activity, position }) => {
-         // Create custom marker content
          const markerContent = document.createElement('div');
          markerContent.className = 'activity-marker';
          markerContent.innerHTML = `
@@ -218,7 +192,6 @@ export default function CityViewMap({ city, activities = [], accommodations = []
             content: markerContent,
          });
 
-         // Add click listener to show info window
          const infoWindow = new google.maps.InfoWindow({
             content: `
                <div style="padding: 8px; max-width: 200px;">
@@ -237,19 +210,15 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       });
    }, [map, activityLocations]);
 
-   // Update accommodation markers when locations change
    useEffect(() => {
       if (!map) return;
 
-      // Remove old accommodation markers
       accommodationMarkersRef.current.forEach(marker => {
          marker.map = null;
       });
       accommodationMarkersRef.current = [];
 
-      // Create new accommodation markers
       accommodationLocations.forEach(({ accommodation, position }) => {
-         // Create custom marker content (purple for hotels)
          const markerContent = document.createElement('div');
          markerContent.className = 'accommodation-marker';
          markerContent.innerHTML = `
@@ -278,7 +247,6 @@ export default function CityViewMap({ city, activities = [], accommodations = []
             content: markerContent,
          });
 
-         // Add click listener to show info window
          const checkInOut = accommodation.checkIn && accommodation.checkOut
             ? `${accommodation.checkIn} → ${accommodation.checkOut}`
             : '';
@@ -301,7 +269,6 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       });
    }, [map, accommodationLocations]);
 
-   // Fit bounds to show all markers
    useEffect(() => {
       if (!map) return;
 

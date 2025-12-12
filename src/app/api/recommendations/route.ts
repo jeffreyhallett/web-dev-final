@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Initialize OpenAI client
 const openai = new OpenAI({
    apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Define the function schema for activity recommendations
 const getActivityRecommendationsFunction: OpenAI.Chat.ChatCompletionTool = {
    type: 'function',
    function: {
@@ -85,7 +83,6 @@ export interface RecommendationsResponse {
 
 export async function POST(request: NextRequest) {
    try {
-      // Check for API key
       if (!process.env.OPENAI_API_KEY) {
          return NextResponse.json(
             {
@@ -99,7 +96,6 @@ export async function POST(request: NextRequest) {
       const body = await request.json();
       const { city, country, existingActivities } = body;
 
-      // Validate required fields
       if (!city || !country) {
          return NextResponse.json(
             { error: 'City and country are required' },
@@ -107,7 +103,6 @@ export async function POST(request: NextRequest) {
          );
       }
 
-      // Build the prompt
       const existingActivitiesList =
          existingActivities && existingActivities.length > 0
             ? `The user has already planned these activities: ${existingActivities.join(', ')}. Please suggest different activities that complement their existing plans.`
@@ -125,7 +120,6 @@ ${existingActivitiesList}
 
 Provide diverse recommendations across different categories. Include specific locations and helpful tips.`;
 
-      // Call OpenAI with function calling
       const completion = await openai.chat.completions.create({
          model: 'gpt-4o-mini',
          messages: [
@@ -139,7 +133,6 @@ Provide diverse recommendations across different categories. Include specific lo
          },
       });
 
-      // Extract the function call response
       const toolCall = completion.choices[0]?.message?.tool_calls?.[0];
 
       if (!toolCall || toolCall.type !== 'function') {
@@ -149,7 +142,6 @@ Provide diverse recommendations across different categories. Include specific lo
          );
       }
 
-      // Type guard for function tool call
       const functionCall = toolCall as OpenAI.Chat.ChatCompletionMessageToolCall & {
          function: { name: string; arguments: string };
       };
@@ -161,7 +153,6 @@ Provide diverse recommendations across different categories. Include specific lo
          );
       }
 
-      // Parse the function arguments
       const recommendations = JSON.parse(functionCall.function.arguments);
 
       return NextResponse.json({

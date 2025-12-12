@@ -77,7 +77,6 @@ export default function TransportationSection({
    const [editingFlightId, setEditingFlightId] = useState<string | null>(null);
    const [editingTrainId, setEditingTrainId] = useState<string | null>(null);
 
-   // Flight form state
    const [flightDeparture, setFlightDeparture] = useState('');
    const [flightArrival, setFlightArrival] = useState('');
    const [flightNumber, setFlightNumber] = useState('');
@@ -88,7 +87,6 @@ export default function TransportationSection({
    const [flightBookingUrl, setFlightBookingUrl] = useState('');
    const [flightNotes, setFlightNotes] = useState('');
 
-   // Train form state
    const [trainDeparture, setTrainDeparture] = useState('');
    const [trainArrival, setTrainArrival] = useState('');
    const [trainNumber, setTrainNumber] = useState('');
@@ -282,7 +280,6 @@ export default function TransportationSection({
             </button>
          </div>
 
-         {/* Tabs */}
          <div className="flex border-b border-gray-200">
             <button
                onClick={() => setActiveTab('flights')}
@@ -306,7 +303,6 @@ export default function TransportationSection({
             </button>
          </div>
 
-         {/* Add/Edit Form */}
          {showAddForm && (
             <div className="bg-gray-50 rounded-lg p-3">
                {activeTab === 'flights' ? (
@@ -490,7 +486,6 @@ export default function TransportationSection({
             </div>
          )}
 
-         {/* Content */}
          <div className="space-y-2 max-h-48 overflow-y-auto">
             {activeTab === 'flights' ? (
                flights.length === 0 ? (
@@ -558,7 +553,6 @@ export default function TransportationSection({
                            </div>
                         </div>
 
-                        {/* Expanded Details */}
                         {expandedFlightId === flight.id && (
                            <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
                               {flight.confirmationNumber ? (
@@ -661,7 +655,6 @@ export default function TransportationSection({
                         </div>
                      </div>
 
-                     {/* Expanded Details */}
                      {expandedTrainId === train.id && (
                         <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
                            {train.confirmationNumber ? (

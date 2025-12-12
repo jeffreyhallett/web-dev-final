@@ -5,7 +5,6 @@ import { dbNoteToNote } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/notes - Get all notes for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -29,7 +28,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/notes - Create a new note
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -40,7 +38,6 @@ export async function POST(
 
       const { content, noteDate } = body;
 
-      // Validate required fields
       if (!content) {
          return NextResponse.json(
             { error: 'Content is required' },

@@ -33,7 +33,6 @@ export default function AddActivityModal({ isOpen, onClose, onSubmit, cityName, 
 
    const isEditing = !!initialActivity;
 
-   // Populate form when initialActivity changes
    useEffect(() => {
       if (initialActivity) {
          setName(initialActivity.name || '');

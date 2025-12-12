@@ -5,7 +5,6 @@ import { dbNoteToNote } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string; noteId: string }> };
 
-// GET /api/trips/[id]/notes/[noteId] - Get a single note
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -32,7 +31,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/notes/[noteId] - Update a note
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -66,7 +64,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/notes/[noteId] - Delete a note
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

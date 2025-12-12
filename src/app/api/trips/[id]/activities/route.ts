@@ -5,7 +5,6 @@ import { dbActivityToActivity, dbCityToCity } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/activities - Get all activities for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -15,7 +14,6 @@ export async function GET(
       const { searchParams } = new URL(request.url);
       const cityId = searchParams.get('cityId');
 
-      // Build query based on optional cityId filter
       let activities: DbActivity[];
       if (cityId) {
          activities = asType<DbActivity>(await sql`
@@ -31,7 +29,6 @@ export async function GET(
          `);
       }
 
-      // Get all cities for the trip to build city map
       const cities = asType<DbTripCity>(await sql`
          SELECT * FROM trip_cities
          WHERE trip_id = ${tripId}
@@ -52,7 +49,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/activities - Create a new activity
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -74,7 +70,6 @@ export async function POST(
          orderIndex,
       } = body;
 
-      // Validate required fields
       if (!name) {
          return NextResponse.json(
             { error: 'Name is required' },
@@ -82,7 +77,6 @@ export async function POST(
          );
       }
 
-      // Get the next order index if not provided
       let nextOrderIndex = orderIndex;
       if (nextOrderIndex === undefined) {
          const maxOrderResult = asType<{ max_order: number | null }>(await sql`
@@ -130,7 +124,6 @@ export async function POST(
          );
       }
 
-      // Get the city if referenced
       let city = null;
       if (result[0].city_id) {
          const cities = asType<DbTripCity>(await sql`

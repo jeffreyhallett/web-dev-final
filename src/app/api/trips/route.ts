@@ -1,20 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql, asType } from '@/lib/db';
-import type { DbTrip, DbTripCity, DbActivity, DbAccommodation, DbFlight, DbTrain, DbNote } from '@/lib/db/types';
+import type { DbTrip, DbTripCity, DbActivity, DbAccommodation, DbFlight, DbTrain, DbNote, DbUser } from '@/lib/db/types';
 import { assembleTrip } from '@/lib/db/transforms';
 
-// For now, we'll use a hardcoded user ID or accept it from headers
-// In production, this would come from authentication
-function getUserId(request: NextRequest): string {
-   return request.headers.get('x-user-id') || '00000000-0000-0000-0000-000000000001';
+async function getUserIdByEmail(request: NextRequest): Promise<string> {
+   const email = request.headers.get('x-user-email') || 'default@example.com';
+
+   const existingUsers = asType<DbUser>(await sql`
+      SELECT * FROM users WHERE email = ${email}
+   `);
+
+   if (existingUsers.length > 0) {
+      return existingUsers[0].id;
+   }
+
+   const newUsers = asType<DbUser>(await sql`
+      INSERT INTO users (email, name)
+      VALUES (${email}, ${email.split('@')[0]})
+      RETURNING *
+   `);
+
+   return newUsers[0].id;
 }
 
-// GET /api/trips - Get all trips for the current user
 export async function GET(request: NextRequest) {
    try {
-      const userId = getUserId(request);
+      const userId = await getUserIdByEmail(request);
 
-      // Get all trips for the user
       const trips = asType<DbTrip>(await sql`
          SELECT * FROM trips
          WHERE user_id = ${userId}
@@ -25,10 +37,8 @@ export async function GET(request: NextRequest) {
          return NextResponse.json([]);
       }
 
-      // Get all trip IDs for batch querying
       const tripIds = trips.map((t) => t.id);
 
-      // Batch fetch all related data
       const [cities, activities, accommodations, flights, trains, notes] =
          await Promise.all([
             sql`
@@ -63,7 +73,6 @@ export async function GET(request: NextRequest) {
             `.then((r) => asType<DbNote>(r)),
          ]);
 
-      // Assemble trips with their related data
       const assembledTrips = trips.map((trip) =>
          assembleTrip(
             trip,
@@ -86,10 +95,9 @@ export async function GET(request: NextRequest) {
    }
 }
 
-// POST /api/trips - Create a new trip
 export async function POST(request: NextRequest) {
    try {
-      const userId = getUserId(request);
+      const userId = await getUserIdByEmail(request);
       const body = await request.json();
 
       const { name, arrivalDate, departureDate } = body;
@@ -102,7 +110,6 @@ export async function POST(request: NextRequest) {
 
       const newTrip = result[0];
 
-      // Return the trip in frontend format
       return NextResponse.json(
          {
             id: newTrip.id,

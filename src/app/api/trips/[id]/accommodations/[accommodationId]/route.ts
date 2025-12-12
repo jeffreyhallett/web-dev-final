@@ -7,7 +7,6 @@ type RouteParams = {
    params: Promise<{ id: string; accommodationId: string }>;
 };
 
-// Helper to get accommodation with city
 async function getAccommodationWithCity(
    tripId: string,
    accommodationId: string
@@ -36,7 +35,6 @@ async function getAccommodationWithCity(
    return dbAccommodationToAccommodation(accommodation, city);
 }
 
-// GET /api/trips/[id]/accommodations/[accommodationId] - Get a single accommodation
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -66,7 +64,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/accommodations/[accommodationId] - Update an accommodation
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -130,7 +127,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/accommodations/[accommodationId] - Delete an accommodation
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

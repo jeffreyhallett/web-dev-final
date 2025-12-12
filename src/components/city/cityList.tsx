@@ -1,6 +1,6 @@
 import { City } from '@/types';
 import { useState } from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline'; //Todo: revisit icon choice solution
+import { PlusIcon } from '@heroicons/react/24/outline';
 
 interface CityListProps {
    cities: City[];

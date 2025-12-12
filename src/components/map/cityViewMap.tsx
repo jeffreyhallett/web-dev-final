@@ -29,20 +29,28 @@ export default function CityViewMap({ city, activities = [], accommodations = []
    const [activityLocations, setActivityLocations] = useState<ActivityLocation[]>([]);
    const [accommodationLocations, setAccommodationLocations] = useState<AccommodationLocation[]>([]);
    const geocoderRef = useRef<google.maps.Geocoder | null>(null);
+   const prevCityIdRef = useRef<string>(city.id);
 
    useEffect(() => {
-      if (!isLoaded || !activities.length) {
-         return;
-      }
-
       let cancelled = false;
 
       const geocodeActivities = async () => {
+         if (prevCityIdRef.current !== city.id) {
+            prevCityIdRef.current = city.id;
+            setActivityLocations([]);
+            setAccommodationLocations([]);
+         }
+
+         if (!isLoaded || !activities.length) {
+            setActivityLocations([]);
+            return;
+         }
+
          if (!geocoderRef.current) {
             geocoderRef.current = new google.maps.Geocoder();
          }
 
-         const activitiesWithLocation = activities.filter(a => a.location && a.location.trim());
+         const activitiesWithLocation = activities.filter(a => a.city.id === city.id && a.location && a.location.trim());
 
          const locationPromises = activitiesWithLocation.map(async (activity) => {
             try {
@@ -80,21 +88,22 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       return () => {
          cancelled = true;
       };
-   }, [isLoaded, activities, city.name, city.country, city.latitude, city.longitude]);
+   }, [isLoaded, activities, city.id, city.name, city.country, city.latitude, city.longitude]);
 
    useEffect(() => {
-      if (!isLoaded || !accommodations.length) {
-         return;
-      }
-
       let cancelled = false;
 
       const geocodeAccommodations = async () => {
+         if (!isLoaded || !accommodations.length) {
+            setAccommodationLocations([]);
+            return;
+         }
+
          if (!geocoderRef.current) {
             geocoderRef.current = new google.maps.Geocoder();
          }
 
-         const accommodationsWithAddress = accommodations.filter(a => a.address && a.address.trim());
+         const accommodationsWithAddress = accommodations.filter(a => a.city.id === city.id && a.address && a.address.trim());
 
          const locationPromises = accommodationsWithAddress.map(async (accommodation) => {
             try {
@@ -132,7 +141,7 @@ export default function CityViewMap({ city, activities = [], accommodations = []
       return () => {
          cancelled = true;
       };
-   }, [isLoaded, accommodations, city.name, city.country, city.latitude, city.longitude]);
+   }, [isLoaded, accommodations, city.id, city.name, city.country, city.latitude, city.longitude]);
 
    useEffect(() => {
       if (!isLoaded || !mapRef.current || map) return;

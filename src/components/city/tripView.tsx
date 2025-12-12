@@ -75,7 +75,6 @@ export default function TripView({
    trip,
    city,
    activities,
-   onUpdateActivities,
    onUpdateTrip,
    onAddActivity,
    onEditActivity,
@@ -121,7 +120,7 @@ export default function TripView({
 
    const cityAccommodation = trip.accommodation.find(a => a.city.id === city.id);
 
-   const plannedActivities = activities.filter((a) => a.inTravelPlan === true);
+   const plannedActivities = activities.filter((a) => a.inTravelPlan);
 
    const handleAccommodationUpdate = (accommodation: Accommodation) => {
       const existingAccommodations = [...trip.accommodation];
@@ -156,7 +155,7 @@ export default function TripView({
          <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full min-h-0">
             <div className="flex flex-col min-h-0">
                <div className="bg-white rounded-xl shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-                  <div className="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-100">
+                  <div className="shrink-0 flex justify-between items-center p-4 border-b border-gray-100">
                      <h3 className="text-lg font-semibold">Planned Activities</h3>
                      <button
                         onClick={onAddActivity}
@@ -187,10 +186,10 @@ export default function TripView({
                   </div>
 
                   {onAddRecommendedActivity && (
-                     <div className="flex-shrink-0 p-4 border-t border-gray-100">
+                     <div className="shrink-0 p-4 border-t border-gray-100">
                         <button
                            onClick={() => setShowRecommendationsModal(true)}
-                           className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg"
+                           className="w-full py-3 px-4 bg-linear-to-r from-indigo-500 to-purple-500 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:from-indigo-600 hover:to-purple-600 transition-all shadow-md hover:shadow-lg"
                         >
                            <SparklesIcon className="w-5 h-5" />
                            Get AI Suggestions

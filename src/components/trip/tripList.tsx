@@ -28,14 +28,14 @@ export default function TripList({
    const selectedTrip = trips.find(t => t.id === selectedTripId);
 
    return (
-      <div className="bg-gray-300 rounded-lg shadow-sm p-6 h-full flex flex-col">
-         <h2 className="text-lg font-semibold mb-4 text-gray-700">Your Trips</h2>
+      <div className="bg-indigo-50 rounded-lg shadow-sm p-6 h-full flex flex-col">
+         <h2 className="text-lg font-semibold mb-4 text-indigo-900">Your Trips</h2>
 
          <div className="mb-6">
             <div className="relative">
                <button
                   onClick={() => setIsTripDropdownOpen(!isTripDropdownOpen)}
-                  className="w-full bg-white rounded-xl p-4 shadow-sm border-2 border-transparent hover:border-blue-200 transition-all text-left"
+                  className="w-full bg-white rounded-xl p-4 shadow-sm border-2 border-transparent hover:border-indigo-100 transition-all text-left"
                >
                   {selectedTrip ? (
                      <div className="flex items-center justify-between">
@@ -74,8 +74,8 @@ export default function TripList({
                               }
                               setIsTripDropdownOpen(false);
                            }}
-                           className={`w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0 ${
-                              selectedTripId === trip.id ? 'bg-blue-50' : ''
+                           className={`w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors border-b border-gray-50 last:border-b-0 ${
+                              selectedTripId === trip.id ? 'bg-indigo-50' : ''
                            }`}
                         >
                            <div className="font-medium text-gray-800">
@@ -92,7 +92,7 @@ export default function TripList({
                            setIsTripDropdownOpen(false);
                            onCreateTrip?.();
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-blue-600 font-medium flex items-center gap-2"
+                        className="w-full text-left px-4 py-3 hover:bg-indigo-50 transition-colors text-indigo-600 font-medium flex items-center gap-2"
                      >
                         <PlusIcon className="w-4 h-4" />
                         Create New Trip
@@ -120,28 +120,28 @@ export default function TripList({
                            onClick={() => onSelectCity(city.id)}
                            className={`w-full text-left px-4 py-3 rounded-xl transition-all ${
                               selectedCityId === city.id
-                                 ? 'bg-blue-500 text-white shadow-md'
-                                 : 'bg-white hover:bg-gray-50 text-gray-800 shadow-sm'
+                                 ? 'bg-indigo-100 text-indigo-900 shadow-md'
+                                 : 'bg-white hover:bg-indigo-50 text-gray-800 shadow-sm'
                            }`}
                         >
                            <div className="flex items-center gap-3">
                               <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                                  selectedCityId === city.id
-                                    ? 'bg-blue-400 text-white'
-                                    : 'bg-gray-100 text-gray-500'
+                                    ? 'bg-indigo-200 text-indigo-700'
+                                    : 'bg-indigo-50 text-indigo-500'
                               }`}>
                                  {index + 1}
                               </div>
                               <div className="flex-1">
                                  <div className="font-medium">{city.name}</div>
                                  <div className={`text-xs ${
-                                    selectedCityId === city.id ? 'text-blue-100' : 'text-gray-400'
+                                    selectedCityId === city.id ? 'text-indigo-600' : 'text-gray-400'
                                  }`}>
                                     {city.country}
                                  </div>
                               </div>
                               <MapPinIcon className={`w-4 h-4 ${
-                                 selectedCityId === city.id ? 'text-blue-200' : 'text-gray-300'
+                                 selectedCityId === city.id ? 'text-indigo-400' : 'text-gray-300'
                               }`} />
                            </div>
                         </button>
@@ -151,7 +151,7 @@ export default function TripList({
 
                <button
                   onClick={onAddCity}
-                  className="rounded-xl mt-4 w-full px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 shadow-sm font-medium"
+                  className="rounded-xl mt-4 w-full px-4 py-3 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors flex items-center justify-center gap-2 shadow-sm font-medium"
                >
                   <PlusIcon className="h-5 w-5" />
                   Add Destination

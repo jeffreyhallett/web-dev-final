@@ -1,29 +1,28 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface UserContextType {
    email: string;
    setEmail: (email: string) => void;
 }
 
-const defaultEmail = 'default@example.com';
+const defaultEmail = 'test@example.com';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-   const [email, setEmail] = useState<string>(defaultEmail);
-
-   useEffect(() => {
-      const stored = localStorage.getItem('userEmail');
-      if (stored) {
-         setEmail(stored);
+   const [email, setEmailState] = useState<string>(() => {
+      if (typeof window !== 'undefined') {
+         return localStorage.getItem('userEmail') || defaultEmail;
       }
-   }, []);
+      return defaultEmail;
+   });
 
-   useEffect(() => {
-      localStorage.setItem('userEmail', email);
-   }, [email]);
+   const setEmail = (newEmail: string) => {
+      setEmailState(newEmail);
+      localStorage.setItem('userEmail', newEmail);
+   };
 
    return (
       <UserContext.Provider value={{ email, setEmail }}>

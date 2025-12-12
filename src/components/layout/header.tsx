@@ -20,8 +20,8 @@ export default function Header() {
 
    return (
       <header className='mx-4 mt-4 mb-0'>
-         <div className='bg-gray-300 rounded-lg shadow-lg px-6 py-4 flex items-center justify-between'>
-            <h1 className='text-2xl font-semibold text-gray-800'>Trip Planner</h1>
+         <div className='bg-indigo-50 rounded-lg shadow-lg px-6 py-4 flex items-center justify-between'>
+            <h1 className='text-2xl font-semibold text-indigo-900'>AI Trip Planner</h1>
             <div className='flex items-center gap-4'>
                <div className='flex items-center gap-2'>
                   <label className='text-xl'>Email:</label>

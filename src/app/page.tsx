@@ -419,15 +419,15 @@ export default function HomePage() {
                                     onClick={() => setSelectedCityId(city.id)}
                                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                                        selectedCityId === city.id
-                                          ? 'bg-gray-800 text-white'
-                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                          ? 'bg-indigo-100 text-indigo-700'
+                                          : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
                                     }`}
                                  >
                                     {city.name}
                                  </button>
                               ))}
                            </div>
-                           <div className="w-px h-6 bg-gray-200" />
+                           <div className="w-px h-6 bg-indigo-100" />
                            <button
                               onClick={handleDeleteTrip}
                               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"

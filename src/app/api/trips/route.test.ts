@@ -14,6 +14,14 @@ vi.mock('@/lib/db', () => ({
 import { GET, POST } from './route';
 
 // Sample data
+const sampleDbUser = {
+   id: '00000000-0000-0000-0000-000000000001',
+   email: 'default@example.com',
+   name: 'default',
+   created_at: new Date('2024-01-01'),
+   updated_at: new Date('2024-01-01'),
+};
+
 const sampleDbTrip = {
    id: '550e8400-e29b-41d4-a716-446655440001',
    user_id: '00000000-0000-0000-0000-000000000001',
@@ -30,6 +38,9 @@ describe('GET /api/trips', () => {
    });
 
    it('should return empty array when no trips exist', async () => {
+      // Mock user lookup
+      mockSql.mockResolvedValueOnce([sampleDbUser]);
+      // Mock trips query - returns empty
       mockSql.mockResolvedValueOnce([]);
 
       const request = new NextRequest('http://localhost/api/trips');
@@ -41,6 +52,8 @@ describe('GET /api/trips', () => {
    });
 
    it('should return trips with related data', async () => {
+      // Mock user lookup
+      mockSql.mockResolvedValueOnce([sampleDbUser]);
       // Mock trips query
       mockSql.mockResolvedValueOnce([sampleDbTrip]);
       // Mock cities, activities, accommodations, flights, trains, notes
@@ -63,15 +76,17 @@ describe('GET /api/trips', () => {
    });
 
    it('should use custom user ID from header', async () => {
-      const customUserId = 'custom-user-id-123';
+      // Mock user lookup
+      mockSql.mockResolvedValueOnce([sampleDbUser]);
+      // Mock trips query - returns empty
       mockSql.mockResolvedValueOnce([]);
 
       const request = new NextRequest('http://localhost/api/trips', {
-         headers: { 'x-user-id': customUserId },
+         headers: { 'x-user-id': 'custom-user-id-123' },
       });
       await GET(request);
 
-      // Check that the SQL was called with custom user ID
+      // Check that the SQL was called
       expect(mockSql).toHaveBeenCalled();
    });
 
@@ -93,6 +108,9 @@ describe('POST /api/trips', () => {
    });
 
    it('should create a new trip', async () => {
+      // Mock user lookup
+      mockSql.mockResolvedValueOnce([sampleDbUser]);
+      // Mock trip creation
       mockSql.mockResolvedValueOnce([sampleDbTrip]);
 
       const request = new NextRequest('http://localhost/api/trips', {
@@ -121,6 +139,9 @@ describe('POST /api/trips', () => {
          arrival_date: null,
          departure_date: null,
       };
+      // Mock user lookup
+      mockSql.mockResolvedValueOnce([sampleDbUser]);
+      // Mock trip creation
       mockSql.mockResolvedValueOnce([minimalTrip]);
 
       const request = new NextRequest('http://localhost/api/trips', {

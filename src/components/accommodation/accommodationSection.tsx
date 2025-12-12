@@ -21,7 +21,6 @@ export default function AccommodationSection({
    const [isSubmitting, setIsSubmitting] = useState(false);
    const [isExpanded, setIsExpanded] = useState(false);
 
-   // Form state
    const [name, setName] = useState('');
    const [address, setAddress] = useState('');
    const [checkIn, setCheckIn] = useState('');
@@ -30,7 +29,6 @@ export default function AccommodationSection({
    const [confirmationNumber, setConfirmationNumber] = useState('');
    const [notes, setNotes] = useState('');
 
-   // Initialize form with existing accommodation data
    useEffect(() => {
       if (accommodation) {
          setName(accommodation.name || '');
@@ -111,7 +109,6 @@ export default function AccommodationSection({
             </button>
          </div>
 
-         {/* Add/Edit Form */}
          {showAddForm && (
             <div className="bg-gray-50 rounded-lg p-3">
                <form onSubmit={handleSubmit} className="space-y-2">
@@ -182,7 +179,6 @@ export default function AccommodationSection({
             </div>
          )}
 
-         {/* Display accommodation */}
          {!showAddForm && (
             <div className="space-y-2">
                {hasAccommodation ? (
@@ -242,7 +238,6 @@ export default function AccommodationSection({
                         </div>
                      </div>
 
-                     {/* Expanded Details */}
                      {isExpanded && (
                         <div className="px-3 pb-3 pt-1 border-t border-gray-200 bg-gray-100 space-y-1.5 ml-4">
                            {accommodation.confirmationNumber ? (

@@ -5,7 +5,6 @@ import { dbCityToCity } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/cities - Get all cities for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -29,7 +28,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/cities - Add a city to a trip
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -40,7 +38,6 @@ export async function POST(
 
       const { name, country, latitude, longitude, orderIndex } = body;
 
-      // Validate required fields
       if (!name || !country || latitude === undefined || longitude === undefined) {
          return NextResponse.json(
             { error: 'Name, country, latitude, and longitude are required' },
@@ -48,7 +45,6 @@ export async function POST(
          );
       }
 
-      // Get the next order index if not provided
       let nextOrderIndex = orderIndex;
       if (nextOrderIndex === undefined) {
          const maxOrderResult = asType<{ max_order: number | null }>(await sql`

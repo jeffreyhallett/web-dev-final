@@ -1,6 +1,3 @@
-// Database row types (matching PostgreSQL schema)
-// These represent the raw data from the database
-
 export interface DbUser {
    id: string;
    email: string;

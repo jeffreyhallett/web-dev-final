@@ -46,7 +46,6 @@ function CompactRecommendationCard({
 
    return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-         {/* Compact header - always visible */}
          <div className="p-3 flex items-center gap-2">
             <button
                onClick={() => setIsExpanded(!isExpanded)}
@@ -86,7 +85,6 @@ function CompactRecommendationCard({
             </button>
          </div>
 
-         {/* Expandable details */}
          {isExpanded && (
             <div className="px-3 pb-3 pt-0 border-t border-gray-100">
                <p className="text-xs text-gray-600 mt-2">{activity.description}</p>
@@ -134,7 +132,6 @@ export default function RecommendedActivities({
 
    return (
       <div className="rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 overflow-hidden">
-         {/* Header */}
          <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/40 transition-colors"
@@ -153,10 +150,8 @@ export default function RecommendedActivities({
             />
          </button>
 
-         {/* Content */}
          {isExpanded && (
             <div className="px-3 pb-3">
-               {/* Loading */}
                {isLoading && (
                   <div className="flex items-center justify-center py-6">
                      <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -166,7 +161,6 @@ export default function RecommendedActivities({
                   </div>
                )}
 
-               {/* Error */}
                {error && (
                   <div className="py-4 text-center">
                      <p className="text-xs text-red-600 mb-2">{error.message}</p>
@@ -179,7 +173,6 @@ export default function RecommendedActivities({
                   </div>
                )}
 
-               {/* Empty - Get Recommendations Button */}
                {showEmptyState && (
                   <button
                      onClick={onFetchRecommendations}
@@ -190,7 +183,6 @@ export default function RecommendedActivities({
                   </button>
                )}
 
-               {/* Recommendations List */}
                {showRecommendations && (
                   <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
                      {recommendations.map((activity, index) => (
@@ -205,7 +197,6 @@ export default function RecommendedActivities({
                   </div>
                )}
 
-               {/* Refresh button */}
                {showRecommendations && (
                   <button
                      onClick={() => {

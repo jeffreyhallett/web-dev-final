@@ -32,7 +32,6 @@ export default function AddTripModal({ isOpen, onClose, onSubmit }: AddTripModal
             arrivalDate: arrivalDate || undefined,
             departureDate: departureDate || undefined,
          });
-         // Reset form
          setName('');
          setArrivalDate('');
          setDepartureDate('');

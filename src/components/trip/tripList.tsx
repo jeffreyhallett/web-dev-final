@@ -31,7 +31,6 @@ export default function TripList({
       <div className="bg-gray-300 rounded-lg shadow-sm p-6 h-full flex flex-col">
          <h2 className="text-lg font-semibold mb-4 text-gray-700">Your Trips</h2>
 
-         {/* Trip Selector */}
          <div className="mb-6">
             <div className="relative">
                <button
@@ -63,7 +62,6 @@ export default function TripList({
                   )}
                </button>
 
-               {/* Dropdown Menu */}
                {isTripDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-10">
                      {trips.map(trip => (
@@ -89,7 +87,6 @@ export default function TripList({
                         </button>
                      ))}
 
-                     {/* Add New Trip Button */}
                      <button
                         onClick={() => {
                            setIsTripDropdownOpen(false);
@@ -105,7 +102,6 @@ export default function TripList({
             </div>
          </div>
 
-         {/* Cities List for Selected Trip */}
          {selectedTrip && (
             <>
                <div className="flex items-center justify-between mb-3">

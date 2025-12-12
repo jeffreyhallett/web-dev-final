@@ -14,7 +14,6 @@ interface ModalProps {
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
    const modalRef = useRef<HTMLDivElement>(null);
 
-   // Handle escape key
    useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
          if (e.key === 'Escape' && isOpen) {
@@ -26,14 +25,12 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
       return () => document.removeEventListener('keydown', handleEscape);
    }, [isOpen, onClose]);
 
-   // Handle click outside
    const handleBackdropClick = (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
          onClose();
       }
    };
 
-   // Prevent body scroll when modal is open
    useEffect(() => {
       if (isOpen) {
          document.body.style.overflow = 'hidden';

@@ -5,7 +5,6 @@ import { dbCityToCity } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string; cityId: string }> };
 
-// GET /api/trips/[id]/cities/[cityId] - Get a single city
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -32,7 +31,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/cities/[cityId] - Update a city
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -69,7 +67,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/cities/[cityId] - Delete a city
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

@@ -5,7 +5,6 @@ import { dbFlightToFlight } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string; flightId: string }> };
 
-// GET /api/trips/[id]/flights/[flightId] - Get a single flight
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -35,7 +34,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/flights/[flightId] - Update a flight
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -89,7 +87,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/flights/[flightId] - Delete a flight
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

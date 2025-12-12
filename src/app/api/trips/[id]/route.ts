@@ -5,7 +5,6 @@ import { assembleTrip } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id] - Get a single trip with all related data
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -13,7 +12,6 @@ export async function GET(
    try {
       const { id } = await params;
 
-      // Get the trip
       const trips = asType<DbTrip>(await sql`
          SELECT * FROM trips WHERE id = ${id}
       `);
@@ -24,7 +22,6 @@ export async function GET(
 
       const trip = trips[0];
 
-      // Fetch all related data in parallel
       const [cities, activities, accommodations, flights, trains, notes] =
          await Promise.all([
             sql`
@@ -79,7 +76,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id] - Update a trip
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -106,7 +102,6 @@ export async function PUT(
 
       const updatedTrip = result[0];
 
-      // Fetch related data to return complete trip
       const [cities, activities, accommodations, flights, trains, notes] =
          await Promise.all([
             sql`
@@ -161,7 +156,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id] - Delete a trip
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

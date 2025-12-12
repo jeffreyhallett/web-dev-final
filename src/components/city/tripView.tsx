@@ -88,27 +88,21 @@ export default function TripView({
    onDeleteFlight,
    onDeleteTrain,
 }: TripViewProps) {
-   // Track note content from props for synchronization
    const noteFromProps = trip.notes[0]?.content || '';
 
-   // Local state for form inputs - use React's recommended pattern for derived state
    const [prevNoteFromProps, setPrevNoteFromProps] = useState(noteFromProps);
    const [noteContent, setNoteContent] = useState(noteFromProps);
    const [showRecommendationsModal, setShowRecommendationsModal] = useState(false);
 
-   // Sync when props change - React recommends this pattern over useEffect for derived state
-   // See: https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
    if (noteFromProps !== prevNoteFromProps) {
       setPrevNoteFromProps(noteFromProps);
       setNoteContent(noteFromProps);
    }
 
-   // Get existing activity names for recommendations context
    const existingActivityNames = useMemo(() => {
       return activities.filter(a => a.inTravelPlan).map(a => a.name);
    }, [activities]);
 
-   // Recommendations hook
    const {
       data: recommendationsData,
       isLoading: isLoadingRecommendations,
@@ -116,7 +110,6 @@ export default function TripView({
       fetch: fetchRecommendations,
    } = useRecommendations(city.name, city.country, existingActivityNames);
 
-   // Handle adding a recommended activity
    const handleAddRecommendedActivity = useCallback(
       async (activity: RecommendedActivity) => {
          if (onAddRecommendedActivity) {
@@ -126,12 +119,10 @@ export default function TripView({
       [onAddRecommendedActivity]
    );
 
-   // Get accommodations for this city
    const cityAccommodation = trip.accommodation.find(a => a.city.id === city.id);
 
    const plannedActivities = activities.filter((a) => a.inTravelPlan === true);
 
-   // Handler for updating accommodation
    const handleAccommodationUpdate = (accommodation: Accommodation) => {
       const existingAccommodations = [...trip.accommodation];
       const existingIndex = existingAccommodations.findIndex(a => a.city.id === city.id);
@@ -145,13 +136,11 @@ export default function TripView({
       onUpdateTrip({ accommodation: existingAccommodations });
    };
 
-   // Handler for deleting accommodation
    const handleAccommodationDelete = () => {
       const updatedAccommodations = trip.accommodation.filter(a => a.city.id !== city.id);
       onUpdateTrip({ accommodation: updatedAccommodations });
    };
 
-   // Handler for updating notes
    const handleNotesBlur = () => {
       const newNote: Note = {
          id: trip.notes[0]?.id || `temp-${Date.now()}`,
@@ -167,7 +156,6 @@ export default function TripView({
          <div className="grid grid-cols-[300px_1fr_350px] gap-6 h-full min-h-0">
             <div className="flex flex-col min-h-0">
                <div className="bg-white rounded-xl shadow-sm flex-1 flex flex-col min-h-0 overflow-hidden">
-                  {/* Fixed Header */}
                   <div className="flex-shrink-0 flex justify-between items-center p-4 border-b border-gray-100">
                      <h3 className="text-lg font-semibold">Planned Activities</h3>
                      <button
@@ -179,7 +167,6 @@ export default function TripView({
                      </button>
                   </div>
 
-                  {/* Scrollable Activities List */}
                   <div className="flex-1 min-h-0 overflow-y-auto p-4">
                      <div className="space-y-3">
                         {plannedActivities.length === 0 ? (
@@ -199,7 +186,6 @@ export default function TripView({
                      </div>
                   </div>
 
-                  {/* Fixed Footer Button */}
                   {onAddRecommendedActivity && (
                      <div className="flex-shrink-0 p-4 border-t border-gray-100">
                         <button
@@ -266,7 +252,6 @@ export default function TripView({
             </div>
          </div>
 
-         {/* Recommendations Modal */}
          <RecommendationsModal
             isOpen={showRecommendationsModal}
             onClose={() => setShowRecommendationsModal(false)}

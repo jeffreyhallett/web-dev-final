@@ -5,7 +5,6 @@ import { dbAccommodationToAccommodation, dbCityToCity } from '@/lib/db/transform
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/accommodations - Get all accommodations for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -15,7 +14,6 @@ export async function GET(
       const { searchParams } = new URL(request.url);
       const cityId = searchParams.get('cityId');
 
-      // Build query based on optional cityId filter
       let accommodations: DbAccommodation[];
       if (cityId) {
          accommodations = asType<DbAccommodation>(await sql`
@@ -31,7 +29,6 @@ export async function GET(
          `);
       }
 
-      // Get all cities for the trip to build city map
       const cities = asType<DbTripCity>(await sql`
          SELECT * FROM trip_cities
          WHERE trip_id = ${tripId}
@@ -55,7 +52,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/accommodations - Create a new accommodation
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -75,7 +71,6 @@ export async function POST(
          cityId,
       } = body;
 
-      // Validate required fields
       if (!name) {
          return NextResponse.json(
             { error: 'Name is required' },
@@ -116,7 +111,6 @@ export async function POST(
          );
       }
 
-      // Get the city if referenced
       let city = null;
       if (result[0].city_id) {
          const cities = asType<DbTripCity>(await sql`

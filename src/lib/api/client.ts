@@ -1,9 +1,17 @@
-// API Client for Trip Planner
 import type { Trip, City, Activity, Accommodation, Flight, Train, Note } from '@/types';
 
 const API_BASE = '/api';
 
-// Generic fetch helper with error handling
+let currentUserEmail = 'default@example.com';
+
+export function setApiUserEmail(email: string) {
+   currentUserEmail = email;
+}
+
+export function getApiUserEmail() {
+   return currentUserEmail;
+}
+
 async function fetchApi<T>(
    endpoint: string,
    options?: RequestInit
@@ -11,6 +19,7 @@ async function fetchApi<T>(
    const response = await fetch(`${API_BASE}${endpoint}`, {
       headers: {
          'Content-Type': 'application/json',
+         'x-user-email': currentUserEmail,
          ...options?.headers,
       },
       ...options,
@@ -24,7 +33,6 @@ async function fetchApi<T>(
    return response.json();
 }
 
-// ============ Trips ============
 export const tripsApi = {
    list: () => fetchApi<Trip[]>('/trips'),
 
@@ -48,7 +56,6 @@ export const tripsApi = {
       }),
 };
 
-// ============ Cities ============
 export const citiesApi = {
    list: (tripId: string) => fetchApi<City[]>(`/trips/${tripId}/cities`),
 
@@ -73,7 +80,6 @@ export const citiesApi = {
       }),
 };
 
-// ============ Activities ============
 export const activitiesApi = {
    list: (tripId: string) => fetchApi<Activity[]>(`/trips/${tripId}/activities`),
 
@@ -116,7 +122,6 @@ export const activitiesApi = {
       }),
 };
 
-// ============ Accommodations ============
 export const accommodationsApi = {
    list: (tripId: string) => fetchApi<Accommodation[]>(`/trips/${tripId}/accommodations`),
 
@@ -159,7 +164,6 @@ export const accommodationsApi = {
       }),
 };
 
-// ============ Flights ============
 export const flightsApi = {
    list: (tripId: string) => fetchApi<Flight[]>(`/trips/${tripId}/flights`),
 
@@ -204,7 +208,6 @@ export const flightsApi = {
       }),
 };
 
-// ============ Trains ============
 export const trainsApi = {
    list: (tripId: string) => fetchApi<Train[]>(`/trips/${tripId}/trains`),
 
@@ -251,7 +254,6 @@ export const trainsApi = {
       }),
 };
 
-// ============ Notes ============
 export const notesApi = {
    list: (tripId: string) => fetchApi<Note[]>(`/trips/${tripId}/notes`),
 
@@ -276,7 +278,6 @@ export const notesApi = {
       }),
 };
 
-// ============ Recommendations ============
 export interface RecommendedActivity {
    name: string;
    description: string;

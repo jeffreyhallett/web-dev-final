@@ -35,19 +35,15 @@ export default function HomePage() {
    const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
    const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
-   // Modal state
    const [showAddTripModal, setShowAddTripModal] = useState(false);
    const [showAddCityModal, setShowAddCityModal] = useState(false);
    const [showAddActivityModal, setShowAddActivityModal] = useState(false);
    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
-   // Fetch trips from API
    const { data: trips, isLoading: tripsLoading, error: tripsError, refetch: refetchTrips } = useTrips();
 
-   // Fetch selected trip details
    const { data: selectedTrip, refetch: refetchTrip } = useTrip(selectedTripId);
 
-   // Mutations
    const { mutate: createTrip } = useCreateTrip();
    const { mutate: deleteTrip } = useDeleteTrip();
    const { mutate: createCity } = useCreateCity();
@@ -65,31 +61,23 @@ export default function HomePage() {
    const { mutate: updateTrain } = useUpdateTrain();
    const { mutate: deleteTrain } = useDeleteTrain();
 
-   // Derived values
    const selectedCity = selectedTrip?.cities.find(c => c.id === selectedCityId);
 
-   // Handler to select a trip
    const handleSelectTrip = useCallback((tripId: string) => {
       setSelectedTripId(tripId);
    }, []);
 
-   // Handler to update activities within a trip
    const handleUpdateActivities = useCallback((newActivities: Activity[]) => {
-      // Activities are managed through individual API calls in TripView
-      // This handler is kept for component compatibility
       refetchTrip();
    }, [refetchTrip]);
 
-   // Handler to update trip (partial updates - for accommodation and notes)
    const handleUpdateTrip = useCallback(async (updates: Partial<Trip>) => {
       if (!selectedTripId || !selectedTrip) return;
 
       try {
-         // Handle accommodation updates
          if (updates.accommodation) {
             for (const acc of updates.accommodation) {
                if (acc.id && !acc.id.startsWith('temp-')) {
-                  // Update existing accommodation
                   await updateAccommodation({
                      tripId: selectedTripId,
                      accommodationId: acc.id,
@@ -105,7 +93,6 @@ export default function HomePage() {
                      },
                   });
                } else if (acc.name) {
-                  // Create new accommodation
                   await createAccommodation({
                      tripId: selectedTripId,
                      data: {
@@ -123,11 +110,9 @@ export default function HomePage() {
             }
          }
 
-         // Handle notes updates
          if (updates.notes) {
             for (const note of updates.notes) {
                if (note.id && !note.id.startsWith('temp-')) {
-                  // Update existing note
                   await updateNote({
                      tripId: selectedTripId,
                      noteId: note.id,
@@ -137,7 +122,6 @@ export default function HomePage() {
                      },
                   });
                } else if (note.content) {
-                  // Create new note
                   await createNote({
                      tripId: selectedTripId,
                      data: {
@@ -155,7 +139,6 @@ export default function HomePage() {
       }
    }, [selectedTripId, selectedTrip, updateAccommodation, createAccommodation, updateNote, createNote, refetchTrip]);
 
-   // Handler to delete trip
    const handleDeleteTrip = useCallback(async () => {
       if (!selectedTripId) return;
 
@@ -172,26 +155,22 @@ export default function HomePage() {
       }
    }, [selectedTripId, deleteTrip, refetchTrips]);
 
-   // Handler to open create trip modal
    const handleOpenCreateTrip = useCallback(() => {
       setShowAddTripModal(true);
    }, []);
 
-   // Handler to create a new trip (from modal)
    const handleCreateTrip = useCallback(async (data: { name: string; arrivalDate?: string; departureDate?: string }) => {
       const newTrip = await createTrip(data);
       await refetchTrips();
       setSelectedTripId(newTrip.id);
    }, [createTrip, refetchTrips]);
 
-   // Handler to open add city modal
    const handleOpenAddCity = useCallback(() => {
       if (selectedTripId) {
          setShowAddCityModal(true);
       }
    }, [selectedTripId]);
 
-   // Handler to add city (from modal)
    const handleAddCitySubmit = useCallback(async (data: { name: string; country: string; latitude: number; longitude: number }) => {
       if (!selectedTripId) return;
       const newCity = await createCity({
@@ -202,7 +181,6 @@ export default function HomePage() {
       setSelectedCityId(newCity.id);
    }, [selectedTripId, createCity, refetchTrip]);
 
-   // Handler to open add activity modal
    const handleOpenAddActivity = useCallback(() => {
       if (selectedTripId && selectedCityId) {
          setEditingActivity(null);
@@ -210,13 +188,11 @@ export default function HomePage() {
       }
    }, [selectedTripId, selectedCityId]);
 
-   // Handler to open edit activity modal
    const handleEditActivity = useCallback((activity: Activity) => {
       setEditingActivity(activity);
       setShowAddActivityModal(true);
    }, []);
 
-   // Handler to add or update activity (from modal)
    const handleAddActivitySubmit = useCallback(async (data: {
       name: string;
       description?: string;
@@ -229,7 +205,6 @@ export default function HomePage() {
       if (!selectedTripId || !selectedCityId) return;
 
       if (editingActivity) {
-         // Update existing activity
          await updateActivity({
             tripId: selectedTripId,
             activityId: editingActivity.id,
@@ -244,7 +219,6 @@ export default function HomePage() {
             },
          });
       } else {
-         // Create new activity
          await createActivity({
             tripId: selectedTripId,
             data: {
@@ -263,7 +237,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, selectedCityId, editingActivity, createActivity, updateActivity, refetchTrip]);
 
-   // Handler to delete activity
    const handleDeleteActivity = useCallback(async (activityId: string) => {
       if (!selectedTripId) return;
       await deleteActivity({
@@ -273,7 +246,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, deleteActivity, refetchTrip]);
 
-   // Handler to add flight
    const handleAddFlight = useCallback(async (data: {
       departureAirport: string;
       arrivalAirport: string;
@@ -293,7 +265,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, createFlight, refetchTrip]);
 
-   // Handler to update flight
    const handleUpdateFlight = useCallback(async (flightId: string, data: {
       departureAirport?: string;
       arrivalAirport?: string;
@@ -314,7 +285,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, updateFlight, refetchTrip]);
 
-   // Handler to delete flight
    const handleDeleteFlight = useCallback(async (flightId: string) => {
       if (!selectedTripId) return;
       await deleteFlight({
@@ -324,7 +294,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, deleteFlight, refetchTrip]);
 
-   // Handler to add train
    const handleAddTrain = useCallback(async (data: {
       departureStation: string;
       arrivalStation: string;
@@ -345,7 +314,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, createTrain, refetchTrip]);
 
-   // Handler to update train
    const handleUpdateTrain = useCallback(async (trainId: string, data: {
       departureStation?: string;
       arrivalStation?: string;
@@ -367,7 +335,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, updateTrain, refetchTrip]);
 
-   // Handler to delete train
    const handleDeleteTrain = useCallback(async (trainId: string) => {
       if (!selectedTripId) return;
       await deleteTrain({
@@ -377,7 +344,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, deleteTrain, refetchTrip]);
 
-   // Handler to add recommended activity
    const handleAddRecommendedActivity = useCallback(async (activity: RecommendedActivity) => {
       if (!selectedTripId || !selectedCityId) return;
       await createActivity({
@@ -393,7 +359,6 @@ export default function HomePage() {
       await refetchTrip();
    }, [selectedTripId, selectedCityId, createActivity, refetchTrip]);
 
-   // Loading state
    if (tripsLoading) {
       return (
          <div className="flex items-center justify-center h-screen">
@@ -402,7 +367,6 @@ export default function HomePage() {
       );
    }
 
-   // Error state
    if (tripsError) {
       return (
          <div className="flex items-center justify-center h-screen">
@@ -431,7 +395,6 @@ export default function HomePage() {
                </div>
             </aside>
             <main className="flex-1 flex flex-col px-4 py-6 gap-4 overflow-hidden">
-               {/* Trip Header Strip */}
                {selectedTrip && (
                   <div className="bg-white rounded-xl shadow-sm px-6 py-4">
                      <div className="flex items-center justify-between">
@@ -507,7 +470,6 @@ export default function HomePage() {
             </main>
          </div>
 
-         {/* Modals */}
          <AddTripModal
             isOpen={showAddTripModal}
             onClose={() => setShowAddTripModal(false)}

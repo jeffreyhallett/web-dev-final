@@ -5,7 +5,6 @@ import { dbTrainToTrain } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string; trainId: string }> };
 
-// GET /api/trips/[id]/trains/[trainId] - Get a single train
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -35,7 +34,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/trains/[trainId] - Update a train
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -91,7 +89,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/trains/[trainId] - Delete a train
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

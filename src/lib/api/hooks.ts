@@ -12,9 +12,10 @@ import {
    notesApi,
    recommendationsApi,
    RecommendationsResponse,
+   setApiUserEmail,
 } from './client';
+import { useUser } from '@/lib/context/UserContext';
 
-// ============ Generic Hook Types ============
 interface UseQueryResult<T> {
    data: T | null;
    isLoading: boolean;
@@ -28,8 +29,8 @@ interface UseMutationResult<TData, TVariables> {
    error: Error | null;
 }
 
-// ============ Trips Hooks ============
 export function useTrips(): UseQueryResult<Trip[]> {
+   const { email } = useUser();
    const [data, setData] = useState<Trip[] | null>(null);
    const [isLoading, setIsLoading] = useState(true);
    const [error, setError] = useState<Error | null>(null);
@@ -37,6 +38,7 @@ export function useTrips(): UseQueryResult<Trip[]> {
    const fetchData = useCallback(async () => {
       setIsLoading(true);
       setError(null);
+      setApiUserEmail(email);
       try {
          const trips = await tripsApi.list();
          setData(trips);
@@ -45,7 +47,7 @@ export function useTrips(): UseQueryResult<Trip[]> {
       } finally {
          setIsLoading(false);
       }
-   }, []);
+   }, [email]);
 
    useEffect(() => {
       fetchData();
@@ -149,7 +151,6 @@ export function useDeleteTrip(): UseMutationResult<{ success: boolean; deletedId
    return { mutate, isLoading, error };
 }
 
-// ============ Cities Hooks ============
 export function useCreateCity(): UseMutationResult<City, { tripId: string; data: Parameters<typeof citiesApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -194,7 +195,6 @@ export function useDeleteCity(): UseMutationResult<{ success: boolean; deletedId
    return { mutate, isLoading, error };
 }
 
-// ============ Activities Hooks ============
 export function useCreateActivity(): UseMutationResult<Activity, { tripId: string; data: Parameters<typeof activitiesApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -261,7 +261,6 @@ export function useDeleteActivity(): UseMutationResult<{ success: boolean; delet
    return { mutate, isLoading, error };
 }
 
-// ============ Accommodations Hooks ============
 export function useCreateAccommodation(): UseMutationResult<Accommodation, { tripId: string; data: Parameters<typeof accommodationsApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -328,7 +327,6 @@ export function useDeleteAccommodation(): UseMutationResult<{ success: boolean; 
    return { mutate, isLoading, error };
 }
 
-// ============ Notes Hooks ============
 export function useCreateNote(): UseMutationResult<Note, { tripId: string; data: Parameters<typeof notesApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -395,7 +393,6 @@ export function useDeleteNote(): UseMutationResult<{ success: boolean; deletedId
    return { mutate, isLoading, error };
 }
 
-// ============ Flights Hooks ============
 export function useCreateFlight(): UseMutationResult<Flight, { tripId: string; data: Parameters<typeof flightsApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -462,7 +459,6 @@ export function useDeleteFlight(): UseMutationResult<{ success: boolean; deleted
    return { mutate, isLoading, error };
 }
 
-// ============ Trains Hooks ============
 export function useCreateTrain(): UseMutationResult<Train, { tripId: string; data: Parameters<typeof trainsApi.create>[1] }> {
    const [isLoading, setIsLoading] = useState(false);
    const [error, setError] = useState<Error | null>(null);
@@ -529,7 +525,6 @@ export function useDeleteTrain(): UseMutationResult<{ success: boolean; deletedI
    return { mutate, isLoading, error };
 }
 
-// ============ Recommendations Hooks ============
 export function useRecommendations(
    city: string | null,
    country: string | null,

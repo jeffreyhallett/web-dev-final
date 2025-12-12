@@ -1,4 +1,3 @@
-// Transform functions between database rows and frontend types
 import type { Trip, City, Activity, Accommodation, Flight, Train, Note } from '@/types';
 import type {
    DbTrip,
@@ -10,7 +9,6 @@ import type {
    DbNote,
 } from './types';
 
-// Helper to extract just the date portion from a timestamp
 function toDateOnly(timestamp: string | Date | null | undefined): string {
    if (!timestamp) return '';
    if (timestamp instanceof Date) {
@@ -19,7 +17,6 @@ function toDateOnly(timestamp: string | Date | null | undefined): string {
    return timestamp.split('T')[0];
 }
 
-// City transforms
 export function dbCityToCity(dbCity: DbTripCity): City {
    return {
       id: dbCity.id,
@@ -30,7 +27,6 @@ export function dbCityToCity(dbCity: DbTripCity): City {
    };
 }
 
-// Activity transforms
 export function dbActivityToActivity(
    dbActivity: DbActivity,
    city: City | null
@@ -48,7 +44,6 @@ export function dbActivityToActivity(
    };
 }
 
-// Accommodation transforms
 export function dbAccommodationToAccommodation(
    dbAccommodation: DbAccommodation,
    city: City | null
@@ -66,7 +61,6 @@ export function dbAccommodationToAccommodation(
    };
 }
 
-// Flight transforms
 export function dbFlightToFlight(dbFlight: DbFlight): Flight {
    return {
       id: dbFlight.id,
@@ -84,7 +78,6 @@ export function dbFlightToFlight(dbFlight: DbFlight): Flight {
    };
 }
 
-// Train transforms
 export function dbTrainToTrain(dbTrain: DbTrain): Train {
    return {
       id: dbTrain.id,
@@ -103,7 +96,6 @@ export function dbTrainToTrain(dbTrain: DbTrain): Train {
    };
 }
 
-// Note transforms
 export function dbNoteToNote(dbNote: DbNote): Note {
    return {
       id: dbNote.id,
@@ -112,7 +104,6 @@ export function dbNoteToNote(dbNote: DbNote): Note {
    };
 }
 
-// Full trip assembly
 export function assembleTrip(
    dbTrip: DbTrip,
    dbCities: DbTripCity[],
@@ -122,7 +113,6 @@ export function assembleTrip(
    dbTrains: DbTrain[],
    dbNotes: DbNote[]
 ): Trip {
-   // Convert cities first (needed for activities and accommodations)
    const cities = dbCities.map(dbCityToCity);
    const cityMap = new Map(cities.map((c) => [c.id, c]));
 

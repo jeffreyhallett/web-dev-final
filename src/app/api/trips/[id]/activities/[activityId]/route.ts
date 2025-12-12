@@ -5,7 +5,6 @@ import { dbActivityToActivity, dbCityToCity } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string; activityId: string }> };
 
-// Helper to get activity with city
 async function getActivityWithCity(tripId: string, activityId: string) {
    const activities = asType<DbActivity>(await sql`
       SELECT * FROM activities
@@ -31,7 +30,6 @@ async function getActivityWithCity(tripId: string, activityId: string) {
    return dbActivityToActivity(activity, city);
 }
 
-// GET /api/trips/[id]/activities/[activityId] - Get a single activity
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -58,7 +56,6 @@ export async function GET(
    }
 }
 
-// PUT /api/trips/[id]/activities/[activityId] - Update an activity
 export async function PUT(
    request: NextRequest,
    { params }: RouteParams
@@ -126,7 +123,6 @@ export async function PUT(
    }
 }
 
-// DELETE /api/trips/[id]/activities/[activityId] - Delete an activity
 export async function DELETE(
    request: NextRequest,
    { params }: RouteParams

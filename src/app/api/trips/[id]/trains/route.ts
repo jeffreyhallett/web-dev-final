@@ -5,7 +5,6 @@ import { dbTrainToTrain } from '@/lib/db/transforms';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// GET /api/trips/[id]/trains - Get all trains for a trip
 export async function GET(
    request: NextRequest,
    { params }: RouteParams
@@ -29,7 +28,6 @@ export async function GET(
    }
 }
 
-// POST /api/trips/[id]/trains - Create a new train
 export async function POST(
    request: NextRequest,
    { params }: RouteParams
@@ -51,7 +49,6 @@ export async function POST(
          notes,
       } = body;
 
-      // Validate required fields
       if (!departureStation || !arrivalStation) {
          return NextResponse.json(
             { error: 'Departure and arrival stations are required' },

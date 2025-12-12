@@ -215,6 +215,7 @@ export default function TripView({
                   <h3 className="text-lg font-semibold mb-4">Trip Details</h3>
                   <div className="space-y-4">
                      <AccommodationSection
+                        key={city.id}
                         accommodation={cityAccommodation}
                         city={city}
                         onUpdate={handleAccommodationUpdate}

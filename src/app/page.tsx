@@ -67,7 +67,7 @@ export default function HomePage() {
       setSelectedTripId(tripId);
    }, []);
 
-   const handleUpdateActivities = useCallback((newActivities: Activity[]) => {
+   const handleUpdateActivities = useCallback(() => {
       refetchTrip();
    }, [refetchTrip]);
 
@@ -440,7 +440,7 @@ export default function HomePage() {
                   </div>
                )}
 
-               <div className="flex-1 w-full overflow-hidden">
+               <div className="flex-1 w-full overflow-hidden drop-shadow-sm rounded-xl bg-transparent border-transparent">
                   {selectedTrip && selectedCity ? (
                      <TripView
                         trip={selectedTrip}

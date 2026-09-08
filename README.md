@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Trip Planner
 
-## Getting Started
+A full-stack trip planning app built with Next.js. Plan multi-city trips, keep track of
+accommodations, activities, flights, trains, and notes, and get AI-generated activity
+recommendations for each city on your itinerary.
 
-First, run the development server:
+Built as a final project for CSE 2004 (Web Development).
+
+## Features
+
+- **Trips & cities** — create trips with multiple destinations, each with its own map view
+- **Itinerary planning** — add and edit activities per city, mark them as part of your travel plan
+- **Accommodations & notes** — track where you're staying and jot down notes per trip
+- **Transportation** — record flights and trains with confirmation numbers and booking links
+- **AI recommendations** — get suggested activities for a city powered by the OpenAI API
+- **Interactive maps** — view cities and activity locations with the Google Maps JavaScript API
+
+## Tech stack
+
+- [Next.js](https://nextjs.org) (App Router) + [React](https://react.dev)
+- [TypeScript](https://www.typescriptlang.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Neon](https://neon.tech) (serverless Postgres)
+- [OpenAI API](https://platform.openai.com/docs) for activity recommendations
+- [Google Maps JavaScript API](https://developers.google.com/maps) for map views
+- [Vitest](https://vitest.dev) for API route tests
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- A [Neon](https://neon.tech) Postgres database (or any Postgres connection string)
+- An [OpenAI API key](https://platform.openai.com/api-keys)
+- A [Google Maps API key](https://developers.google.com/maps/documentation/javascript/get-api-key) with the Maps JavaScript API enabled
+
+### Setup
+
+1. Clone the repo and install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Create a `.env.local` file in the project root with the following variables:
+
+   ```bash
+   DATABASE_URL=postgres://user:password@host/dbname
+   OPENAI_API_KEY=sk-...
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
+   ```
+
+   `DATABASE_URL` should point at a Postgres database containing the tables this app
+   expects (trips, cities, activities, accommodations, flights, trains, notes). If you're
+   using Neon, the connection string is available from your project dashboard.
+
+3. Run the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) to see the app.
+
+### Other scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build          # production build
+npm run start           # run a production build
+npm run lint             # lint with ESLint
+npm run lint:fix       # lint and auto-fix
+npm run format          # format with Prettier
+npm run format:check   # check formatting without writing
+npm test                 # run the test suite once
+npm run test:watch     # run tests in watch mode
+npm run test:coverage  # run tests with coverage
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+  app/
+    api/               # Next.js route handlers (trips, cities, activities, etc.)
+    page.tsx           # main app page
+  components/          # React components, grouped by feature
+  lib/
+    api/               # client-side API helpers and React hooks
+    context/           # React context providers
+    db/                # database client and types
+    hooks/             # misc React hooks (Google Maps loader, etc.)
+  types/               # shared TypeScript types
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## CI
 
-## Learn More
+Pushes and pull requests to `main` run linting, tests, and a production build via
+GitHub Actions (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
-To learn more about Next.js, take a look at the following resources:
+## License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the [MIT License](LICENSE).
